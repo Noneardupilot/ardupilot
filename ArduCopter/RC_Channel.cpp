@@ -13,9 +13,19 @@ int8_t RC_Channels_Copter::flight_mode_channel_number() const
     return copter.g.flight_mode_chan.get();
 }
 
+
+
+/***********************************************************************************************************************
+*函数原型：void RC_Channel_Copter::mode_switch_changed(modeswitch_pos_t new_pos)
+*函数功能：更改模式开关
+*修改日期：2018-9-13
+*修改作者：cihang_uav
+*备注信息：Support for mode switches
+*************************************************************************************************************************/
 void RC_Channel_Copter::mode_switch_changed(modeswitch_pos_t new_pos)
 {
-    if (new_pos < 0 || (uint8_t)new_pos > copter.num_flight_modes) {
+    if (new_pos < 0 || (uint8_t)new_pos > copter.num_flight_modes)
+    {
         // should not have been called
         return;
     }
@@ -35,16 +45,83 @@ void RC_Channel_Copter::mode_switch_changed(modeswitch_pos_t new_pos)
     }
 
     if (!rc().find_channel_for_option(SIMPLE_MODE) &&
-        !rc().find_channel_for_option(SUPERSIMPLE_MODE)) {
+        !rc().find_channel_for_option(SUPERSIMPLE_MODE))
+    {
         // if none of the Aux Switches are set to Simple or Super Simple Mode then
         // set Simple Mode using stored parameters from EEPROM
-        if (BIT_IS_SET(copter.g.super_simple, new_pos)) {
+        if (BIT_IS_SET(copter.g.super_simple, new_pos))
+        {
             copter.set_simple_mode(2);
-        } else {
+        } else
+        {
             copter.set_simple_mode(BIT_IS_SET(copter.g.simple_modes, new_pos));
         }
     }
 }
+
+/***********************************************************************************************************************
+*函数原型：void RC_Channel::do_aux_function_zigzag(const aux_switch_pos_t ch_flag)
+*函数功能：执行zigzag动作模式
+*修改日期：2018-9-27
+*修改作者：cihang_uav
+*备注信息：hal.uartG->printf("copter.control_mode=%d\r\n",copter.control_mode);
+         hal.uartG->printf("CHANG123\r\n");
+*************************************************************************************************************************/
+void RC_Channel_Copter::do_aux_function_zigzag(const aux_switch_pos_t ch_flag)
+{
+
+	    switch (ch_flag)
+	    {
+			case HIGH:  //如果是高电平，就设置记录A点
+			{
+			  	if(copter.control_mode != 5 && copter.control_mode != 16)
+			    {
+			          return;
+			    }
+				if(copter.mode_zigzag.zigzag_record_point(true))
+				{
+					gcs().send_text(MAV_SEVERITY_WARNING,"Z Start Record A point"); //发送自动信息
+					AP_Notify::flags.zigzag_record = 16; // 2^4 = 16 means flash blue 4 seconds
+
+				}
+				break;
+
+			}
+			case MIDDLE: //这里什么都不执行
+
+				break;
+			case LOW:
+			{
+				//如果没有在定点，模式下直接返回就可以
+			  	if(copter.control_mode != 5 && copter.control_mode != 16)
+			    {
+			          return;
+			    }
+				if(copter.mode_zigzag.zigzag_record_point(false))
+				{
+			  		gcs().send_text(MAV_SEVERITY_WARNING," Z Start Record B point"); //发送自动信息
+			  		AP_Notify::flags.zigzag_record = 81; // 3^4 = 81 means flash yellow 4 seconds
+
+				}
+			  		break;
+
+			}
+	    }
+
+}
+
+
+
+
+
+/***********************************************************************************************************************
+*函数原型：void RC_Channel_Copter::init_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
+*函数功能：初始化
+*修改日期：2018-9-26
+*修改作者：cihang_uav
+*备注信息：init_aux_switch_function - initialize aux functions
+*************************************************************************************************************************/
+
 
 bool RC_Channels_Copter::has_valid_input() const
 {
@@ -57,7 +134,13 @@ bool RC_Channels_Copter::has_valid_input() const
     return true;
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void RC_Channel_Copter::init_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
+*函数功能：初始化
+*修改日期：2018-9-26
+*修改作者：cihang_uav
+*备注信息：init_aux_switch_function - initialize aux functions
+*************************************************************************************************************************/
 // init_aux_switch_function - initialize aux functions
 void RC_Channel_Copter::init_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
 {
@@ -110,6 +193,14 @@ void RC_Channel_Copter::init_aux_function(const aux_func_t ch_option, const aux_
     }
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void RC_Channel_Copter::do_aux_function_change_mode(const control_mode_t mode,const aux_switch_pos_t ch_flag)
+*函数功能：更改模式
+*修改日期：2018-9-13
+*修改作者：cihang_uav
+*备注信息：do_aux_function_change_mode - change mode based on an aux switch being moved
+*************************************************************************************************************************/
 // do_aux_function_change_mode - change mode based on an aux switch
 // being moved
 void RC_Channel_Copter::do_aux_function_change_mode(const control_mode_t mode,
@@ -129,6 +220,14 @@ void RC_Channel_Copter::do_aux_function_change_mode(const control_mode_t mode,
     }
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void RC_Channel_Copter::do_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
+*函数功能：更改模式
+*修改日期：2018-9-13
+*修改作者：cihang_uav
+*备注信息：do_aux_function - implement the function invoked by auxillary switches
+*************************************************************************************************************************/
 // do_aux_function - implement the function invoked by auxillary switches
 void RC_Channel_Copter::do_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
 {

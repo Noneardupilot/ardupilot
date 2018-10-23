@@ -200,8 +200,10 @@ void AP_SerialManager::init()
         }
 #endif
         
-        if (state[i].uart != nullptr) {
-            switch (state[i].protocol) {
+        if (state[i].uart != nullptr)
+        {
+            switch (state[i].protocol)
+            {
                 case SerialProtocol_None:
                     break;
                 case SerialProtocol_Console:

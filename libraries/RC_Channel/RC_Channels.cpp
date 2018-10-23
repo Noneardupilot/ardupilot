@@ -191,7 +191,8 @@ void RC_Channels::reset_mode_switch()
 
 void RC_Channels::read_mode_switch()
 {
-    if (!has_valid_input()) {
+    if (!has_valid_input())
+    {
         // exit immediately when no RC input
         return;
     }

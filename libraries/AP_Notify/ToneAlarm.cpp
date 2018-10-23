@@ -173,14 +173,17 @@ void AP_ToneAlarm::check_cont_tone()
 void AP_ToneAlarm::update()
 {
     // exit if buzzer is not enabled
-    if (pNotify->buzzer_enabled() == false) {
+    if (pNotify->buzzer_enabled() == false)
+    {
         return;
     }
 
     check_cont_tone();
 
-    if (AP_Notify::flags.powering_off) {
-        if (!flags.powering_off) {
+    if (AP_Notify::flags.powering_off)
+    {
+        if (!flags.powering_off)
+        {
             play_tone(AP_NOTIFY_TONE_QUIET_SHUTDOWN);
         }
         flags.powering_off = AP_Notify::flags.powering_off;

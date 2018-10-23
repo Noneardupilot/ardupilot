@@ -360,6 +360,11 @@ public:
         k_param_arming, // 252  - AP_Arming
         k_param_DataFlash = 253, // 253 - Logging Group
 
+
+	    k_param_radio_type = 254,
+	    k_param_Zigzag_time = 255,
+	    k_param_Zigzag_width = 256,
+
         // 254,255: reserved
 
         // the k_param_* space is 9-bits in size
@@ -464,6 +469,10 @@ public:
     AP_Float                autotune_aggressiveness;
     AP_Float                autotune_min_d;
 #endif
+
+    AP_Int32                Zigzag_time;
+    AP_Int8                 Zigzag_width;
+    AP_Int8                 radio_type;
 
     // Note: keep initializers here in the same order as they are declared
     // above.
@@ -585,6 +594,21 @@ public:
     // User custom parameters
     UserParameters user_parameters;
 #endif
+
+    AP_Int32  aPos_lat;
+    AP_Int32  aPos_lng;
+    AP_Int32  aPos_alt;
+    AP_Int32  bPos_lat;
+    AP_Int32  bPos_lng;
+    AP_Int32  bPos_alt;
+    AP_Int32  bpPos_lat;
+    AP_Int32  bpPos_lng;
+    AP_Int32  bpPos_alt;
+    AP_Int16  ab_index;
+    AP_Int8   ab_dirct;
+    AP_Int8   ab_bpMode;
+
+
 
 };
 

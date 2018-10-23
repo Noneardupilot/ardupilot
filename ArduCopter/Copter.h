@@ -955,6 +955,12 @@ private:
 #if MODE_FOLLOW_ENABLED == ENABLED
     ModeFollow mode_follow;
 #endif
+
+#if MODE_ZIGZAG_ENABLED == ENABLED
+    ModeZigZag mode_zigzag;
+#endif
+
+
 #if MODE_GUIDED_ENABLED == ENABLED
     ModeGuided mode_guided;
 #endif
@@ -991,6 +997,7 @@ private:
 #if !HAL_MINIMIZE_FEATURES && OPTFLOW == ENABLED
     ModeFlowHold mode_flowhold;
 #endif
+
 
     // mode.cpp
     Mode *mode_from_mode_num(const uint8_t mode);

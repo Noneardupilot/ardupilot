@@ -92,9 +92,127 @@ uint8_t RGBLed::get_brightness(void) const
 uint32_t RGBLed::get_colour_sequence(void) const
 {
     // initialising pattern
-    if (AP_Notify::flags.initialising) {
+    if (AP_Notify::flags.initialising)
+    {
         return sequence_initialising;
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                  实现Z型控制闪烁
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 记录用于植保的AB点信息
+    	if(AP_Notify::flags.zigzag_record >1)//AP_Notify::flags.zigzag_record=16,记录A,//AP_Notify::flags.zigzag_record=81,记录B点信息
+    	{
+
+    		bool yellow = ((AP_Notify::flags.zigzag_record%2) == 0)?false:true;
+    		switch(ab_point_step)  //1,2,3，4,5
+    		{
+
+    		case 0:
+    		case 1:
+    		case 2:
+    		case 3:
+    		case 4:
+
+    			if(yellow)  //记录B点闪烁黄灯0，1,2,3，4,
+    			{
+
+    				return sequence_zigzag_b;
+    				// yellow on
+
+    			}
+    			else  //记录A点闪烁蓝灯5,6,7,8,9
+    			{
+    				// blue on
+    				return sequence_zigzag_a ;//闪烁blue灯
+    			}
+    			break;
+
+    		case 5:
+    		case 6:
+    		case 7:
+    		case 8:
+
+    			// 亮一会，灭一会，实现闪烁
+    			return sequence_zigzag_ab_off;
+    			break;
+    		case 9:
+    			if(yellow)
+    			{
+
+    				AP_Notify::flags.zigzag_record /= 3;//黄灯持续闪烁4次
+    			}
+    			else
+    			{
+
+    				AP_Notify::flags.zigzag_record /= 2;//蓝灯闪烁四次
+    			}
+    			return sequence_zigzag_ab_off;
+    			break;
+    		}
+    	}
+        if((AP_Notify::flags.zigzag_record_mode)>1)
+        {
+        	switch(ab_point_mode_step)  //1,2,3，4,5
+        	{
+
+        		case 0:
+        		case 1:
+        		case 2:
+        		case 3:
+        		case 4:
+        	           return sequence_zigzag_ab_mode; //这里主要实现闪烁两下
+        	           break;
+        		case 5:
+        		case 6:
+        		case 7:
+        		case 8:
+     	               return sequence_zigzag_ab_mode_off; //这里主要实现关闭
+     	               break;
+        		case 9:
+        			   AP_Notify::flags.zigzag_record_mode/=2;
+    	               return sequence_zigzag_ab_mode_off; //这里主要实现关闭
+    	               break;
+        	}
+
+         }
+
+
+        if((AP_Notify::flags.zigzag_record_mode_erro)>1)
+        {
+        	switch(ab_point_mode_step)  //1,2,3，4,5
+        	{
+
+        		case 0:
+        		case 1:
+        		case 2:
+        		case 3:
+        		case 4:
+        	           return sequence_zigzag_ab_mode_erro; //这里主要实现闪烁两下
+        	           break;
+        		case 5:
+        		case 6:
+        		case 7:
+        		case 8:
+     	               return sequence_zigzag_ab_mode_erro_off; //这里主要实现关闭
+     	               break;
+        		case 9:
+        			   AP_Notify::flags.zigzag_record_mode_erro/=2;
+    	               return sequence_zigzag_ab_mode_erro_off; //这里主要实现关闭
+    	               break;
+        	}
+
+         }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                  实现Z型控制闪烁
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
 
     // save trim and esc calibration pattern
     if (AP_Notify::flags.save_trim || AP_Notify::flags.esc_calibration) {
@@ -154,6 +272,30 @@ void RGBLed::update_colours(void)
 {
     const uint8_t brightness = get_brightness();
 
+
+
+    //比较慢的频率--------slow rate from 50Hz to 10hz
+     counter++;
+     if (counter < 5)
+     {
+
+         return;
+     }
+     //开始复位计算------reset counter
+     counter = 0;
+ //    hal.uartG->printf("CHANG\r\n");
+
+     ab_point_step++;
+     ab_point_mode_step++;
+     if (ab_point_step >= 10) //1,2,3，4,5, 6,7,8,9,0
+     {
+         ab_point_step = 0;
+     }
+     if (ab_point_mode_step >= 10) //1,2,3，4,5, 6,7,8,9,0
+     {
+     	ab_point_mode_step = 0;
+     }
+
     const uint32_t current_colour_sequence = get_colour_sequence();
 
     const uint8_t step = (AP_HAL::millis()/100) % 10;
@@ -169,10 +311,14 @@ void RGBLed::update_colours(void)
 // at 50Hz
 void RGBLed::update()
 {
-    if (!pNotify->_rgb_led_override) {
+//	hal.uartG->printf("MMM\r\n");
+    if (!pNotify->_rgb_led_override)
+    {
         update_colours();
+//        hal.uartG->printf("NNN\r\n");
         set_rgb(_red_des, _green_des, _blue_des);
-    } else {
+    } else
+    {
         update_override();
     }
 }

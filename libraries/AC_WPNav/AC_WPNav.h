@@ -144,6 +144,11 @@ public:
 
     /// update_wpnav - run the wp controller - should be called at 100hz or higher
     bool update_wpnav();
+    bool update_zigzag_wpnav(void);
+
+
+
+
 
     // check_wp_leash_length - check recalc_wp_leash flag and calls calculate_wp_leash_length() if necessary
     //  should be called after _pos_control.update_xy_controller which may have changed the position controller leash lengths

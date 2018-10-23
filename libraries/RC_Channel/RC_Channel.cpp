@@ -386,26 +386,29 @@ void RC_Channel::read_mode_switch()
     else if (pulsewidth < 1750) position = 4;
     else position = 5;
 
-    if (mode_switch_state.last_position == position) {
+    if (mode_switch_state.last_position == position)
+    {
         // nothing to do
         return;
     }
 
     const uint32_t tnow_ms = AP_HAL::millis();
-    if (position != mode_switch_state.debounced_position) {
+    if (position != mode_switch_state.debounced_position)
+    {
         mode_switch_state.debounced_position = position;
         // store time that switch last moved
         mode_switch_state.last_edge_time_ms = tnow_ms;
         return;
     }
 
-    if (tnow_ms - mode_switch_state.last_edge_time_ms < MODE_SWITCH_DEBOUNCE_TIME_MS) {
+    if (tnow_ms - mode_switch_state.last_edge_time_ms < MODE_SWITCH_DEBOUNCE_TIME_MS)
+    {
         // still in debounce
         return;
     }
 
     // set flight mode and simple mode setting
-    mode_switch_changed(position);
+    mode_switch_changed(position); //根据遥控器的位置，就可以判断需要设置无人机运行什么模式
 
     // set the last switch position.  This marks the
     // transition as complete, even if the mode switch actually
@@ -615,6 +618,13 @@ void RC_Channel::do_aux_function(const aux_func_t ch_option, const aux_switch_po
     case LOST_VEHICLE_SOUND:
         do_aux_function_lost_vehicle_sound(ch_flag);
         break;
+
+    case RECOND_ZIGZAG:   //开关切换到59，就是表示执行植保模式
+
+    	do_aux_function_zigzag(ch_flag); //这个函数直接会调用应用层的RC_Channel.cpp
+
+        break;
+
 
     default:
         gcs().send_text(MAV_SEVERITY_INFO, "Invalid channel option (%u)", ch_option);

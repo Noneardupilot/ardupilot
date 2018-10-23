@@ -320,7 +320,7 @@ public:
 
     // for GCS_MAVLink to call:
     bool do_guided(const AP_Mission::Mission_Command& cmd);
-
+    bool verify_yaw();
 protected:
 
     const char *name() const override { return "AUTO"; }
@@ -399,7 +399,7 @@ private:
     bool verify_RTL();
     bool verify_wait_delay();
     bool verify_within_distance();
-    bool verify_yaw();
+
     bool verify_nav_wp(const AP_Mission::Mission_Command& cmd);
     bool verify_circle(const AP_Mission::Mission_Command& cmd);
     bool verify_spline_wp(const AP_Mission::Mission_Command& cmd);
@@ -1204,6 +1204,113 @@ private:
     uint32_t free_fall_start_ms;    // system time free fall was detected
     float free_fall_start_velz;     // vertical velocity when free fall was detected
 };
+
+/****************************增加新的模式**********************************************************/
+
+
+
+
+class ModeZigZag : public Mode
+{
+
+public:
+
+    //继承构造函数------inherit constructor
+    using Copter::Mode::Mode;
+
+    bool init(bool ignore_checks) override;
+    void run() override;
+
+
+    bool requires_GPS() const override { return true; }
+	bool has_manual_throttle() const override { return false; }
+	bool allows_arming(bool from_gcs) const override { return true; };
+	bool is_autopilot() const override { return false; }
+
+	bool          zigzag_auto_complete_state; // set to true if the copter arrived a/b position
+	bool          zigzag_change_yaw;
+	float zigzag_bearing;
+
+	enum ZigzagRCState
+	{
+		RC_MID,
+		RC_RIGHT,
+		RC_LEFT
+	};
+
+	// breakpoint position mode
+	enum ZigzagBPMode
+	{
+		Zigzag_None ,
+		Zigzag_PowerNone,
+		Zigzag_DrugNone,
+		Zigzag_ModeSwitch,
+		Zigzag_PilotOverride,
+	};
+
+	enum ZigzagMode
+	{
+		Zigzag_Manual,
+		Zigzag_Auto,
+	};
+	ZigzagMode zigzag_mode;
+	ZigzagRCState zigzag_rc_state;
+//	ZigzagMode zigzag_mode=Zigzag_None;
+//	ZigzagRCState zigzag_rc_state=RC_MID;
+
+	struct {
+		    bool a_hasbeen_defined;     //true if point A has been defined
+		    bool b_hasbeen_defined;     //true if point B has been defined
+		    //bool action;                // true if get the command to run to next point
+		    //bool breakPoint_defined;   // breakpoint
+		    ZigzagBPMode bp_mode=Zigzag_None;
+		    int8_t direct;             // direction of ab point; 1: right, -1:left
+		    uint16_t width;              // zigzag width cm
+		    int16_t index;             //
+
+		    uint16_t flag;             // 0b101
+		    //uint32_t last_exit_time_ms; // last exit zigzag mode time
+
+		    Location_Class a_pos;      // use absolute position
+		    Location_Class b_pos;
+		    Location_Class bp_pos;
+		    Vector3f vA_pos;          // convert location to vector
+		    Vector3f vB_pos;
+		    Vector3f vBP_pos;
+		} zigzag_waypoint_state;
+
+
+		   void zigzag_manual_control(void);
+			void zigzag_auto_control(void);
+
+		    void zigzag_calculate_next_dest(Vector3f& next, uint16_t index);
+		    void zigzag_set_destination(void);
+		    void zigzag_set_bp_mode(ZigzagBPMode bp_mode);
+		    void zigzag_stop(void);
+		    void zigzag_auto_stop(void);
+			bool zigzag_record_point(bool aPoint);
+
+			void zigzag_clear_record(void);
+			void zigzag_save(void);
+		    void zigzag_load(void);
+
+protected:
+
+    const char *name() const override { return "ZigZag"; }
+    const char *name4() const override { return "ZigZ"; }
+
+private:
+
+
+};
+
+
+
+/****************************增加新的模式**********************************************************/
+
+
+
+
 
 // modes below rely on Guided mode so must be declared at the end (instead of in alphabetical order)
 

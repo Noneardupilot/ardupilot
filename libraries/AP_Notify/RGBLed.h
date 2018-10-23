@@ -63,6 +63,10 @@ protected:
         uint32_t start_ms;
     } _led_override;
     
+    uint8_t ab_point_step;
+    uint8_t ab_point_mode_step;
+    uint8_t counter;
+
 private:
     void update_colours();
     uint32_t get_colour_sequence() const;
@@ -101,5 +105,14 @@ private:
     const uint32_t sequence_disarmed_good_dgps = DEFINE_COLOUR_SEQUENCE_ALTERNATE(GREEN,OFF);
     const uint32_t sequence_disarmed_good_gps = DEFINE_COLOUR_SEQUENCE_SLOW(GREEN);
     const uint32_t sequence_disarmed_bad_gps = DEFINE_COLOUR_SEQUENCE_SLOW(BLUE);
+
+    const uint32_t sequence_zigzag_a = DEFINE_COLOUR_SEQUENCE_SOLID(BLUE);
+    const uint32_t sequence_zigzag_b = DEFINE_COLOUR_SEQUENCE_SOLID(YELLOW);
+    const uint32_t sequence_zigzag_ab_off = DEFINE_COLOUR_SEQUENCE_SOLID(OFF);
+    const uint32_t sequence_zigzag_ab_mode = DEFINE_COLOUR_SEQUENCE_SOLID(GREEN);
+    const uint32_t sequence_zigzag_ab_mode_off = DEFINE_COLOUR_SEQUENCE_SOLID(OFF);
+    const uint32_t sequence_zigzag_ab_mode_erro = DEFINE_COLOUR_SEQUENCE_SOLID(RED);
+    const uint32_t sequence_zigzag_ab_mode_erro_off = DEFINE_COLOUR_SEQUENCE_SOLID(OFF);
+
 
 };

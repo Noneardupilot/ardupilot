@@ -87,7 +87,8 @@ bool ToshibaLED_I2C::hw_set_rgb(uint8_t red, uint8_t green, uint8_t blue)
 
 void ToshibaLED_I2C::_timer(void)
 {
-    if (!_need_update) {
+    if (!_need_update)
+    {
         return;
     }
     _need_update = false;

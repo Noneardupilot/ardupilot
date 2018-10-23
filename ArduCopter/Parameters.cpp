@@ -731,6 +731,22 @@ const AP_Param::Info Copter::var_info[] = {
     GSCALAR(autotune_min_d, "AUTOTUNE_MIN_D", 0.001f),
 #endif
 
+
+    // @Param: Zigzag_time
+    // @DisplayName: Zigzag_time
+    // @Description: AB/Break Point record time(minutes)
+    // @Range:
+    // @User: Standard
+    GSCALAR(Zigzag_time, "Z_AB_REC_TIME", 0),
+
+    // @Param: Zigzag_width
+    // @DisplayName: Zigzag_width (meter)
+    // @Description: zigzag width
+    // @Range:
+    // @User: Standard
+    GSCALAR(Zigzag_width, "Z_AB_WIDTH", 5),
+
+
     // @Group: NTF_
     // @Path: ../libraries/AP_Notify/AP_Notify.cpp
     GOBJECT(notify, "NTF_",  AP_Notify),
@@ -947,6 +963,56 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
 #ifdef USER_PARAMS_ENABLED
     AP_SUBGROUPINFO(user_parameters, "USR", 28, ParametersG2, UserParameters),
 #endif
+
+	//
+		     //
+		     AP_GROUPINFO("apos_lat", 29, ParametersG2, aPos_lat, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("apos_lng", 30, ParametersG2, aPos_lng, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("apos_alt", 31, ParametersG2, aPos_alt, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("bpos_lat", 32, ParametersG2, bPos_lat, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("bpos_lng", 33, ParametersG2, bPos_lng, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("bpos_alt", 34, ParametersG2, bPos_alt, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("bppos_lat", 35, ParametersG2, bpPos_lat, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("bppos_lng", 36, ParametersG2, bpPos_lng, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("bppos_alt", 37, ParametersG2, bpPos_alt, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("ab_index", 38, ParametersG2, ab_index, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("ab_dirct", 39, ParametersG2, ab_dirct, 0),
+
+		     //
+		     //
+		     AP_GROUPINFO("ab_bpmode", 40, ParametersG2, ab_bpMode, 0),
+
+
 
     AP_GROUPEND
 };

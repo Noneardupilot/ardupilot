@@ -325,6 +325,54 @@ void AC_WPNav::get_wp_stopping_point(Vector3f& stopping_point) const
     _pos_control.get_stopping_point_z(stopping_point);
 }
 
+/***********************************************************************************************************************
+*函数原型：bool AC_WPNav::update_zigzag_wpnav(void)
+*函数功能：自动控制模式
+*修改日期：2018-9-26
+*修改作者：cihang_uav
+*备注信息：zigzag_auto auto run
+*************************************************************************************************************************/
+
+bool AC_WPNav::update_zigzag_wpnav(void)
+{
+    bool ret = true;
+
+    // calculate dt
+    float dt = _pos_control.time_since_last_xy_update();
+    if (dt >= 0.2f)
+    {
+        dt = 0.0f;
+    }
+
+    // allow the accel and speed values to be set without changing
+    // out of auto mode. This makes it easier to tune auto flight
+    _pos_control.set_max_accel_xy(_wp_accel_cmss);
+
+
+    // advance the target if necessary
+    if (!advance_wp_target_along_track(dt))
+    {
+        // To-Do: handle inability to advance along track (probably because of missing terrain data)
+        ret = false;
+    }
+
+    // freeze feedforwards during known discontinuities
+    if (_flags.new_wp_destination)
+    {
+        _flags.new_wp_destination = false;
+
+    }
+
+    _pos_control.update_xy_controller(1.0f);
+    check_wp_leash_length();
+
+    _wp_last_update = AP_HAL::millis();
+
+    return ret;
+}
+
+
+
 /// advance_wp_target_along_track - move target location along track from origin to destination
 bool AC_WPNav::advance_wp_target_along_track(float dt)
 {

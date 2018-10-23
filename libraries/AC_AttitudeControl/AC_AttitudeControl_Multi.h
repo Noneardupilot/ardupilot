@@ -97,4 +97,22 @@ protected:
     AP_Float              _thr_mix_man;     // throttle vs attitude control prioritisation used when using manual throttle (higher values mean we prioritise attitude control over throttle)
     AP_Float              _thr_mix_min;     // throttle vs attitude control prioritisation used when landing (higher values mean we prioritise attitude control over throttle)
     AP_Float              _thr_mix_max;     // throttle vs attitude control prioritisation used during active flight (higher values mean we prioritise attitude control over throttle)
+
+
+    // for test adrc
+    AP_Float            _adrc_r0;
+    AP_Float            _adrc_b01;
+    AP_Float            _adrc_beta0;
+    AP_Float            _adrc_beta1;
+    AP_Float            _adrc_beta2;
+
+    AP_Int16             _adrc_tao_n;
+    AP_Int8             _adrc_use;
+    AP_Int8             _adrc_h_n;
+
+
+
+
+
+
 };

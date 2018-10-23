@@ -302,6 +302,14 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
+// zigzag - follow another vehicle or GCS
+#ifndef MODE_ZIGZAG_ENABLED
+# define MODE_ZIGZAG_ENABLED !HAL_MINIMIZE_FEATURES
+#endif
+
+
+
+//////////////////////////////////////////////////////////////////////////////
 // Guided mode - control vehicle's position or angles from GCS
 #ifndef MODE_GUIDED_ENABLED
 # define MODE_GUIDED_ENABLED ENABLED
@@ -354,6 +362,14 @@
 #ifndef BEACON_ENABLED
 # define BEACON_ENABLED !HAL_MINIMIZE_FEATURES
 #endif
+
+//////////////////////////////////////////////////////////////////////////////
+// ZigZag -
+#ifndef MODE_ZIGZAG_ENABLED
+# define MODE_ZIGZAG_ENABLED !HAL_MINIMIZE_FEATURES
+#endif
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 // RADIO CONFIGURATION

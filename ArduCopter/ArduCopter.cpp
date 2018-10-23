@@ -1,77 +1,26 @@
-/*
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
+/***********************************************************************************************************************
+*文件说明：应用文件头文件
+*文件功能：函数任务
+*修改日期：2018-9-7
+*修改作者：cihang_uav
+*备注信息： 编译代码：./waf configure --board fmuv5
+*备注信息： 下载代码：./waf --targets bin/arducopter --upload
+*备注信息： 更新子模块：git submodule update --init --recursive
+*备注信息： Code commit statistics can be found here: https://github.com/ArduPilot/ardupilot/graphs/contributors
+          Wiki: http://copter.ardupilot.org/
+          Requires modified version of Arduino, which can be found here: http://ardupilot.com/downloads/?category=6
+代码修改备注：
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+          2018-10-14:增加日本手和美国手的切换
+          2018-10-15:修改实现植保AB点控制移植，其中采用八通道进行AB点打点操作，
+          2018-10-16:修改内八上锁，外八解锁
+          2018-10-18:仿真命令：sudo apt-get install build-essential---初始化编辑器
+                             cd ArduCopter
+                             ../Tools/autotest/sim_vehicle.py --console --map
+                             output add 192.168.159.1:14550
 
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-/*
- *  ArduCopter (also known as APM, APM:Copter or just Copter)
- *  Wiki:           copter.ardupilot.org
- *  Creator:        Jason Short
- *  Lead Developer: Randy Mackay
- *  Lead Tester:    Marco Robustini
- *  Based on code and ideas from the Arducopter team: Leonard Hall, Andrew Tridgell, Robert Lefebvre, Pat Hickey, Michael Oborne, Jani Hirvinen,
-                                                      Olivier Adler, Kevin Hester, Arthur Benemann, Jonathan Challinger, John Arne Birkeland,
-                                                      Jean-Louis Naudin, Mike Smith, and more
- *  Thanks to:	Chris Anderson, Jordi Munoz, Jason Short, Doug Weibel, Jose Julio
- *
- *  Special Thanks to contributors (in alphabetical order by first name):
- *
- *  Adam M Rivera       :Auto Compass Declination
- *  Amilcar Lucas       :Camera mount library
- *  Andrew Tridgell     :General development, Mavlink Support
- *  Angel Fernandez     :Alpha testing
- *  AndreasAntonopoulous:GeoFence
- *  Arthur Benemann     :DroidPlanner GCS
- *  Benjamin Pelletier  :Libraries
- *  Bill King           :Single Copter
- *  Christof Schmid     :Alpha testing
- *  Craig Elder         :Release Management, Support
- *  Dani Saez           :V Octo Support
- *  Doug Weibel	        :DCM, Libraries, Control law advice
- *  Emile Castelnuovo   :VRBrain port, bug fixes
- *  Gregory Fletcher    :Camera mount orientation math
- *  Guntars             :Arming safety suggestion
- *  HappyKillmore       :Mavlink GCS
- *  Hein Hollander      :Octo Support, Heli Testing
- *  Igor van Airde      :Control Law optimization
- *  Jack Dunkle         :Alpha testing
- *  James Goppert       :Mavlink Support
- *  Jani Hiriven        :Testing feedback
- *  Jean-Louis Naudin   :Auto Landing
- *  John Arne Birkeland	:PPM Encoder
- *  Jose Julio          :Stabilization Control laws, MPU6k driver
- *  Julien Dubois       :PosHold flight mode
- *  Julian Oes          :Pixhawk
- *  Jonathan Challinger :Inertial Navigation, CompassMot, Spin-When-Armed
- *  Kevin Hester        :Andropilot GCS
- *  Max Levine          :Tri Support, Graphics
- *  Leonard Hall        :Flight Dynamics, Throttle, Loiter and Navigation Controllers
- *  Marco Robustini     :Lead tester
- *  Michael Oborne      :Mission Planner GCS
- *  Mike Smith          :Pixhawk driver, coding support
- *  Olivier Adler       :PPM Encoder, piezo buzzer
- *  Pat Hickey          :Hardware Abstraction Layer (HAL)
- *  Robert Lefebvre     :Heli Support, Copter LEDs
- *  Roberto Navoni      :Library testing, Porting to VRBrain
- *  Sandro Benigno      :Camera support, MinimOSD
- *  Sandro Tognana      :PosHold flight mode
- *  Sebastian Quilter   :SmartRTL
- *  ..and many more.
- *
- *  Code commit statistics can be found here: https://github.com/ArduPilot/ardupilot/graphs/contributors
- *  Wiki: http://copter.ardupilot.org/
- *  Requires modified version of Arduino, which can be found here: http://ardupilot.com/downloads/?category=6
- *
- */
+
+*************************************************************************************************************************/
 
 #include "Copter.h"
 
@@ -206,20 +155,37 @@ void Copter::read_aux_all()
 
 constexpr int8_t Copter::_failsafe_priorities[7];
 
+
+/***********************************************************************************************************************
+*函数原型：void Copter::setup()
+*函数功能：初始化
+*修改日期：2018-9-13
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void Copter::setup()
 {
-    // Load the default values of variables listed in var_info[]s
-    AP_Param::setup_sketch_defaults();
+	 //从参数表中加载默认参数----------Load the default values of variables listed in var_info[]s
+	    AP_Param::setup_sketch_defaults();
 
-    // setup storage layout for copter
-    StorageManager::set_layout_copter();
+	 //初始化储存的多旋翼布局-----------setup storage layout for copter
+	    StorageManager::set_layout_copter();
+	 //传感器初始化，注册
+	   init_ardupilot();
 
-    init_ardupilot();
+	 //初始化整个主loop任务调度-------initialise the main loop scheduler
+	   scheduler.init(&scheduler_tasks[0], ARRAY_SIZE(scheduler_tasks), MASK_LOG_PM);
 
-    // initialise the main loop scheduler
-    scheduler.init(&scheduler_tasks[0], ARRAY_SIZE(scheduler_tasks), MASK_LOG_PM);
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void Copter::loop()
+*函数功能：核心循环函数
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void Copter::loop()
 {
     scheduler.loop();
@@ -278,6 +244,7 @@ void Copter::fast_loop()
 // called at 100hz
 void Copter::rc_loop()
 {
+
     // Read radio and 3-position switch on radio
     // -----------------------------------------
     read_radio();
@@ -310,6 +277,7 @@ void Copter::throttle_loop()
 // should be called at 10hz
 void Copter::update_batt_compass(void)
 {
+//	printf("ADD\r\n");
     // read battery before compass because it may be used for motor interference compensation
     battery.read();
 
