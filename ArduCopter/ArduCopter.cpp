@@ -9,6 +9,12 @@
 *备注信息： Code commit statistics can be found here: https://github.com/ArduPilot/ardupilot/graphs/contributors
           Wiki: http://copter.ardupilot.org/
           Requires modified version of Arduino, which can be found here: http://ardupilot.com/downloads/?category=6
+配置秘钥：  git config --global user.name "Noneardupilot"
+          git config --global user.email  "2551804348@qq.com"
+          ssh-keygen -t rsa -C "2551804348@qq.com"
+
+          git remote add origin https://github.com/Noneardupilot/ardupilot-lxw
+仓库地址：  https://github.com/Noneardupilot/ardupilot-lxw
 代码修改备注：
 
           2018-10-14:增加日本手和美国手的切换
