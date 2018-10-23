@@ -619,7 +619,7 @@ void RC_Channel::do_aux_function(const aux_func_t ch_option, const aux_switch_po
         do_aux_function_lost_vehicle_sound(ch_flag);
         break;
 
-    case RECOND_ZIGZAG:   //开关切换到59，就是表示执行植保模式
+    case RECOND_ZIGZAG:   //开关切换到60，就是表示执行植保模式
 
     	do_aux_function_zigzag(ch_flag); //这个函数直接会调用应用层的RC_Channel.cpp
 

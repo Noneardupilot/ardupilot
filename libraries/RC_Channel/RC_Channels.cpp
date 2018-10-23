@@ -197,7 +197,8 @@ void RC_Channels::read_mode_switch()
         return;
     }
     RC_Channel *c = flight_mode_channel();
-    if (c == nullptr) {
+    if (c == nullptr)
+    {
         return;
     }
     c->read_mode_switch();

@@ -1208,7 +1208,15 @@ private:
 /****************************增加新的模式**********************************************************/
 
 
-
+// breakpoint position mode
+enum ZigzagBPMode
+{
+	Zigzag_None ,
+	Zigzag_PowerNone,
+	Zigzag_DrugNone,
+	Zigzag_ModeSwitch,
+	Zigzag_PilotOverride,
+};
 
 class ModeZigZag : public Mode
 {
@@ -1238,15 +1246,7 @@ public:
 		RC_LEFT
 	};
 
-	// breakpoint position mode
-	enum ZigzagBPMode
-	{
-		Zigzag_None ,
-		Zigzag_PowerNone,
-		Zigzag_DrugNone,
-		Zigzag_ModeSwitch,
-		Zigzag_PilotOverride,
-	};
+
 
 	enum ZigzagMode
 	{

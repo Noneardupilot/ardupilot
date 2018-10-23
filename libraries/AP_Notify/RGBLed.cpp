@@ -88,7 +88,16 @@ uint8_t RGBLed::get_brightness(void) const
     return brightness;
 }
 
-// _scheduled_update - updates _red, _green, _blue according to notify flags
+
+
+/***********************************************************************************************************************
+*函数原型：uint32_t RGBLed::get_colour_sequence(void) const
+*函数功能：更新LED
+*修改日期：2018-9-26
+*修改作者：cihang_uav
+*备注信息： _scheduled_update - updates _red, _green, _blue according to notify flags
+*************************************************************************************************************************/
+
 uint32_t RGBLed::get_colour_sequence(void) const
 {
     // initialising pattern
@@ -211,11 +220,9 @@ uint32_t RGBLed::get_colour_sequence(void) const
 
 
 
-
-
-
     // save trim and esc calibration pattern
-    if (AP_Notify::flags.save_trim || AP_Notify::flags.esc_calibration) {
+    if (AP_Notify::flags.save_trim || AP_Notify::flags.esc_calibration)
+    {
         return sequence_trim_or_esc;
     }
 
@@ -267,7 +274,17 @@ uint32_t RGBLed::get_colour_sequence(void) const
     return sequence_disarmed_bad_gps;
 }
 
-// _scheduled_update - updates _red, _green, _blue according to notify flags
+
+
+
+/***********************************************************************************************************************
+*函数原型：void RGBLed::update_colours(void)
+*函数功能：更新LED
+*修改日期：2018-9-26
+*修改作者：cihang_uav
+*备注信息： _scheduled_update - updates _red, _green, _blue according to notify flags
+*************************************************************************************************************************/
+
 void RGBLed::update_colours(void)
 {
     const uint8_t brightness = get_brightness();

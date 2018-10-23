@@ -58,14 +58,27 @@ void Copter::handle_battery_failsafe(const char *type_str, const int8_t action)
     if (should_disarm_on_failsafe()) {
         init_disarm_motors();
     } else {
-        switch ((Failsafe_Action)action) {
+        switch ((Failsafe_Action)action)
+        {
             case Failsafe_Action_None:
                 return;
             case Failsafe_Action_Land:
                 set_mode_land_with_pause(MODE_REASON_BATTERY_FAILSAFE);
                 break;
             case Failsafe_Action_RTL:
-                set_mode_RTL_or_land_with_pause(MODE_REASON_BATTERY_FAILSAFE);
+
+				if(control_mode == ZIGZAG)
+				{
+					set_mode_RTL_or_land_with_pause(MODE_REASON_BATTERY_FAILSAFE);
+					copter.mode_zigzag.zigzag_set_bp_mode(Zigzag_PowerNone);
+
+				}
+				else
+				{
+					 set_mode_RTL_or_land_with_pause(MODE_REASON_BATTERY_FAILSAFE);
+				}
+
+//                set_mode_RTL_or_land_with_pause(MODE_REASON_BATTERY_FAILSAFE);
                 break;
             case Failsafe_Action_SmartRTL:
                 set_mode_SmartRTL_or_RTL(MODE_REASON_BATTERY_FAILSAFE);

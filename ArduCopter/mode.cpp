@@ -284,6 +284,17 @@ void Copter::exit_mode(Copter::Mode *&old_flightmode,
     }
 #endif
 
+        else if(old_flightmode == &mode_zigzag)
+        {
+        	copter.mode_zigzag.zigzag_stop();
+        	copter.mode_zigzag.zigzag_save();
+
+        	if(motors->armed())
+        	{
+        		copter.mode_zigzag.zigzag_waypoint_state.flag = copter.mode_zigzag.zigzag_waypoint_state.flag << 1;
+        	}
+        }
+
     // smooth throttle transition when switching from manual to automatic flight modes
     if (old_flightmode->has_manual_throttle() && !new_flightmode->has_manual_throttle() && motors->armed() && !ap.land_complete) {
         // this assumes all manual flight modes use get_pilot_desired_throttle to translate pilot input to output throttle

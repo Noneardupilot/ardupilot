@@ -96,9 +96,25 @@ bool Copter::set_home(const Location& loc, bool lock)
     }
 
     // lock home position
-    if (lock) {
+    if (lock)
+    {
         ahrs.lock_home();
     }
+
+	  uint64_t gps_timestamp = gps.time_epoch_usec();
+	  int32_t cur_timestamp_min = gps_timestamp / 6.0e7f;
+
+	  if(cur_timestamp_min - g.Zigzag_time > 10)
+	  {
+		// clear AB/Break Point
+		copter.mode_zigzag.zigzag_clear_record();
+	  }
+	  else
+	  {
+		copter.mode_zigzag.zigzag_load();
+
+	  }
+
 
     // log ahrs home and ekf origin dataflash
     ahrs.Log_Write_Home_And_Origin();
