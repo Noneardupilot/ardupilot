@@ -425,7 +425,8 @@ void RC_Channel::read_mode_switch()
 void RC_Channel::init_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
 {
     // init channel options
-    switch(ch_option) {
+    switch(ch_option)
+    {
     case RC_OVERRIDE_ENABLE:
         do_aux_function(ch_option, ch_flag);
         break;
@@ -441,6 +442,7 @@ void RC_Channel::init_aux_function(const aux_func_t ch_option, const aux_switch_
         break;
     case GRIPPER:
     case SPRAYER:
+    case RECOND_ZIGZAG:
         do_aux_function(ch_option, ch_flag);
         break;
     default:
@@ -581,7 +583,8 @@ void RC_Channel::do_aux_function_rc_override_enable(const aux_switch_pos_t ch_fl
 
 void RC_Channel::do_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
 {
-    switch(ch_option) {
+    switch(ch_option)
+    {
     case CAMERA_TRIGGER:
         do_aux_function_camera_trigger(ch_flag);
         break;
@@ -636,7 +639,7 @@ void RC_Channel::init_aux()
 {
     const aux_switch_pos_t position = read_3pos_switch();
     set_old_switch_position(position);
-    init_aux_function((aux_func_t)option.get(), position);
+    init_aux_function((aux_func_t)option.get(), position); //获取值
 }
 
 // read_3pos_switch

@@ -145,7 +145,8 @@ bool RC_Channels_Copter::has_valid_input() const
 void RC_Channel_Copter::init_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
 {
     // init channel options
-    switch(ch_option) {
+    switch(ch_option)
+    {
     case SIMPLE_MODE:
     case RANGEFINDER:
     case FENCE:
@@ -164,6 +165,7 @@ void RC_Channel_Copter::init_aux_function(const aux_func_t ch_option, const aux_
     case AVOID_PROXIMITY:
     case INVERTED:
     case WINCH_ENABLE:
+    case RECOND_ZIGZAG:
         do_aux_function(ch_option, ch_flag);
         break;
     // the following functions do not need to be initialised:

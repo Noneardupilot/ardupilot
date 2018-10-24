@@ -24,6 +24,9 @@
                              cd ArduCopter
                              ../Tools/autotest/sim_vehicle.py --console --map
                              output add 192.168.159.1:14550
+          2018-10-24:修复自己的SITL仿真问题：
+                             case RECOND_ZIGZAG:
+                                                do_aux_function(ch_option, ch_flag);
 
 
 *************************************************************************************************************************/
