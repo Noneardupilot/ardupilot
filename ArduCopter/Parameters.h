@@ -365,6 +365,9 @@ public:
 	    k_param_Zigzag_time = 255,
 	    k_param_Zigzag_width = 256,
 
+	    k_param_Ushape_time = 255,
+	    k_param_Ushape_width = 256,
+
         // 254,255: reserved
 
         // the k_param_* space is 9-bits in size
@@ -472,6 +475,11 @@ public:
 
     AP_Int32                Zigzag_time;
     AP_Int8                 Zigzag_width;
+
+    AP_Int32                Ushape_time;
+    AP_Int8                 Ushape_width;
+
+
     AP_Int8                 radio_type;
 
     // Note: keep initializers here in the same order as they are declared

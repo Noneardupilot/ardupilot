@@ -145,7 +145,7 @@ public:
     /// update_wpnav - run the wp controller - should be called at 100hz or higher
     bool update_wpnav();
     bool update_zigzag_wpnav(void);
-
+    bool update_ushape_wpnav();
 
 
 

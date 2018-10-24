@@ -102,6 +102,11 @@ public:
         uint32_t zigzag_record      : 8;    // 0 = no record, 1 = time out, 2^n = record b point, 3^n = record a point
         uint32_t zigzag_record_mode    ;    // 0 = no record, 1 = time out, 2^n = record b point, 3^n = record a point
         uint32_t zigzag_record_mode_erro    ;    // 0 = no record, 1 = time out, 2^n = record b point, 3^n = record a point
+        //U型控制模式
+         uint32_t ushape_record      : 8;    // 0 = no record, 1 = time out, 2^n = record b point, 3^n = record a point
+         uint32_t ushape_record_mode    ;    // 0 = no record, 1 = time out, 2^n = record b point, 3^n = record a point
+         uint32_t ushape_record_mode_erro    ;    // 0 = no record, 1 = time out, 2^n = record b point, 3^n = record a point
+
     };
 
     /// notify_events_type - bitmask of active events.

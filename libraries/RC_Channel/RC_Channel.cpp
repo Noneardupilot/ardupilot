@@ -421,7 +421,15 @@ void RC_Channel::read_mode_switch()
 // support for auxillary switches:
 //
 
-// init_aux_switch_function - initialize aux functions
+
+/***********************************************************************************************************************
+*函数原型：void RC_Channel::init_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
+*函数功能：初始化遥控器
+*修改日期：2018-10-24
+*修改作者：cihang_uav
+*备注信息：init_aux_switch_function - initialize aux functions
+*************************************************************************************************************************/
+
 void RC_Channel::init_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
 {
     // init channel options
@@ -443,7 +451,7 @@ void RC_Channel::init_aux_function(const aux_func_t ch_option, const aux_switch_
     case GRIPPER:
     case SPRAYER:
     case RECOND_ZIGZAG:
-        do_aux_function(ch_option, ch_flag);
+        do_aux_function(ch_option, ch_flag); //根据上面的参数设置相对应的功能
         break;
     default:
         gcs().send_text(MAV_SEVERITY_WARNING, "Failed to initialise RC function (%u)", ch_option);
@@ -454,6 +462,15 @@ void RC_Channel::init_aux_function(const aux_func_t ch_option, const aux_switch_
     }
 }
 
+
+
+/***********************************************************************************************************************
+*函数原型：void RC_Channel::init_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
+*函数功能：初始化遥控器
+*修改日期：2018-10-24
+*修改作者：cihang_uav
+*备注信息：init_aux_switch_function - initialize aux functions
+*************************************************************************************************************************/
 void RC_Channel::read_aux()
 {
     const aux_func_t _option = (aux_func_t)option.get();
@@ -581,6 +598,14 @@ void RC_Channel::do_aux_function_rc_override_enable(const aux_switch_pos_t ch_fl
     }
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void RC_Channel::do_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
+*函数功能：实现功能
+*修改日期：2018-10-24
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void RC_Channel::do_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
 {
     switch(ch_option)
@@ -625,9 +650,7 @@ void RC_Channel::do_aux_function(const aux_func_t ch_option, const aux_switch_po
     case RECOND_ZIGZAG:   //开关切换到60，就是表示执行植保模式
 
     	do_aux_function_zigzag(ch_flag); //这个函数直接会调用应用层的RC_Channel.cpp
-
         break;
-
 
     default:
         gcs().send_text(MAV_SEVERITY_INFO, "Invalid channel option (%u)", ch_option);
@@ -635,13 +658,34 @@ void RC_Channel::do_aux_function(const aux_func_t ch_option, const aux_switch_po
     }
 }
 
+
+
+
+
+/***********************************************************************************************************************
+*函数原型：void RC_Channel::init_aux()
+*函数功能：初始化遥控器
+*修改日期：2018-10-24
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
+
 void RC_Channel::init_aux()
 {
     const aux_switch_pos_t position = read_3pos_switch();
-    set_old_switch_position(position);
+    set_old_switch_position(position); //记录上次的位置
     init_aux_function((aux_func_t)option.get(), position); //获取值
 }
 
+
+
+/***********************************************************************************************************************
+*函数原型：void RC_Channels::init(void)
+*函数功能：初始化遥控器
+*修改日期：2018-10-24
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 // read_3pos_switch
 RC_Channel::aux_switch_pos_t RC_Channel::read_3pos_switch() const
 {

@@ -746,6 +746,22 @@ const AP_Param::Info Copter::var_info[] = {
     // @User: Standard
     GSCALAR(Zigzag_width, "Z_AB_WIDTH", 5),
 
+    // @Param: Ushape_time
+    // @DisplayName: Ushape_time
+    // @Description: AB/Break Point record time(minutes)
+    // @Range:
+    // @User: Standard
+    GSCALAR(Ushape_time, "U_AB_REC_TIME", 0),
+
+    // @Param: Zigzag_width
+    // @DisplayName: Zigzag_width (meter)
+    // @Description: zigzag width
+    // @Range:
+    // @User: Standard
+    GSCALAR(Ushape_width, "U_AB_WIDTH", 5),
+
+
+
 
     // @Group: NTF_
     // @Path: ../libraries/AP_Notify/AP_Notify.cpp
