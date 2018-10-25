@@ -2,11 +2,27 @@
 
 #include "GCS_Mavlink.h"
 
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_heartbeat(void)
+*函数功能：发送心跳包数据
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void Copter::gcs_send_heartbeat(void)
 {
     gcs().send_message(MSG_HEARTBEAT);
 }
 
+
+
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_deferred(void)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：look for incoming commands on the GCS links
+*************************************************************************************************************************/
 void Copter::gcs_send_deferred(void)
 {
     gcs().retry_deferred();
@@ -262,6 +278,15 @@ uint32_t GCS_MAVLINK_Copter::telem_delay() const
     return (uint32_t)(copter.g.telem_delay);
 }
 
+
+/***********************************************************************************************************************
+*函数原型：bool GCS_MAVLINK_Copter::try_send_message(enum ap_message id)
+*函数功能：发送信息
+*修改日期：2018-9-7
+*修改作者：cihang_uav
+*备注信息：try to send a message, return false if it wasn't sent
+*************************************************************************************************************************/
+
 // try to send a message, return false if it wasn't sent
 bool GCS_MAVLINK_Copter::try_send_message(enum ap_message id)
 {
@@ -361,6 +386,21 @@ bool GCS_MAVLINK_Copter::try_send_message(enum ap_message id)
         copter.adsb.send_adsb_vehicle(chan);
 #endif
         break;
+
+    case MSG_RADIO_IN:
+        CHECK_PAYLOAD_SIZE(RC_CHANNELS_RAW);
+
+        if(copter.g.radio_mode==1)
+        {
+        	send_radio_in_japan();
+        }
+        else
+        {
+            send_radio_in();
+        }
+
+        break;
+
 
     default:
         return GCS_MAVLINK::try_send_message(id);

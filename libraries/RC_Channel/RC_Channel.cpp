@@ -94,8 +94,7 @@ RC_Channel::RC_Channel(void)
     AP_Param::setup_object_defaults(this, var_info);
 }
 
-void
-RC_Channel::set_range(uint16_t high)
+void RC_Channel::set_range(uint16_t high)
 {
     type_in = RC_CHANNEL_TYPE_RANGE;
     high_in = high;
@@ -120,27 +119,78 @@ RC_Channel::get_reverse(void) const
     return bool(reversed.get());
 }
 
-// read input from hal.rcin or overrides
-bool
-RC_Channel::update(void)
+
+/***********************************************************************************************************************
+*函数原型：bool RC_Channel::update(void)
+*函数功能：获取遥控器输入数据更新
+*修改日期：2018-10-25
+*修改作者：cihang_uav
+*备注信息：read input from hal.rcin or overrides
+*************************************************************************************************************************/
+
+bool RC_Channel::update(void)
 {
-    if (has_override() && !(*RC_Channels::options & RC_IGNORE_OVERRIDES)) {
+    if (has_override() && !(*RC_Channels::options & RC_IGNORE_OVERRIDES))
+    {
         radio_in = override_value;
-    } else if (!(*RC_Channels::options & RC_IGNORE_RECEIVER)) {
+    } else if (!(*RC_Channels::options & RC_IGNORE_RECEIVER))
+    {
         radio_in = hal.rcin->read(ch_in);
-    } else {
+    } else
+    {
         return false;
     }
 
-    if (type_in == RC_CHANNEL_TYPE_RANGE) {
+    if (type_in == RC_CHANNEL_TYPE_RANGE)
+    {
         control_in = pwm_to_range();
-    } else {
+    } else
+    {
         //RC_CHANNEL_TYPE_ANGLE
         control_in = pwm_to_angle();
     }
 
     return true;
 }
+
+/***********************************************************************************************************************
+*函数原型：bool RC_Channel::update(void)
+*函数功能：获取遥控器输入数据更新
+*修改日期：2018-10-25
+*修改作者：cihang_uav
+*备注信息：read input from hal.rcin or overrides
+*************************************************************************************************************************/
+
+bool RC_Channel::update_japan_arm(void)
+{
+    if (has_override() && !(*RC_Channels::options & RC_IGNORE_OVERRIDES))
+    {
+        radio_in = override_value;
+    } else if (!(*RC_Channels::options & RC_IGNORE_RECEIVER))
+    {
+        radio_in = 3000-hal.rcin->read(ch_in);
+    } else
+    {
+        return false;
+    }
+
+    if (type_in == RC_CHANNEL_TYPE_RANGE)
+    {
+        control_in = pwm_to_range();
+    } else
+    {
+        //RC_CHANNEL_TYPE_ANGLE
+        control_in = pwm_to_angle();
+    }
+
+    return true;
+}
+
+
+
+
+
+
 
 // recompute control values with no deadzone
 // When done this way the control_in value can be used as servo_out
@@ -243,8 +293,7 @@ RC_Channel::pwm_to_range_dz(uint16_t _dead_zone)
   convert a pulse width modulation value to a value in the configured
   range
  */
-int16_t
-RC_Channel::pwm_to_range()
+int16_t RC_Channel::pwm_to_range()
 {
     return pwm_to_range_dz(dead_zone);
 }

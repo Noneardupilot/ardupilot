@@ -367,8 +367,8 @@ public:
 
 	    k_param_Ushape_time = 257,
 	    k_param_Ushape_width = 258,
+	    k_param_radio_mode=259,
 
-        // 254,255: reserved
 
         // the k_param_* space is 9-bits in size
         // 511: reserved
@@ -480,6 +480,9 @@ public:
     AP_Int8                 Ushape_width;
 
     AP_Int8                 radio_type;
+    AP_Int8                 radio_mode; //美国手，还是日本手，默认是美国手
+
+
 
     // Note: keep initializers here in the same order as they are declared
     // above.

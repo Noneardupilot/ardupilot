@@ -21,10 +21,31 @@ void Copter::default_dead_zones()
 
 void Copter::init_rc_in()
 {
-    channel_roll     = rc().channel(rcmap.roll()-1);
-    channel_pitch    = rc().channel(rcmap.pitch()-1);
-    channel_throttle = rc().channel(rcmap.throttle()-1);
-    channel_yaw      = rc().channel(rcmap.yaw()-1);
+
+		   if(copter.g.radio_mode==2)         //g.radio_mode=2设置成美国手，否则设置成g.radio_mode=1，则是日本手，其他情况都是美国手
+		   {
+			  //  hal.console->printf("g.radio_mode=%d\r\n",(int)g.radio_mode);
+				channel_roll     = RC_Channels::rc_channel(rcmap.roll()-1);      //0
+				channel_pitch    = RC_Channels::rc_channel(rcmap.pitch()-1);     //1
+				channel_throttle = RC_Channels::rc_channel(rcmap.throttle()-1);  //2
+				channel_yaw      = RC_Channels::rc_channel(rcmap.yaw()-1);       //3
+
+		   }
+		   else if (copter.g.radio_mode==1)   //这里要进行切换初始化，设置日本手
+		   {
+			//	hal.console->printf("g.radio_mode=%d\r\n",(int)g.radio_mode);
+				channel_roll     = RC_Channels::rc_channel(rcmap.roll()-1);   //0
+				channel_pitch = RC_Channels::rc_channel(rcmap.throttle()-1);  //2
+				channel_throttle = RC_Channels::rc_channel(rcmap.pitch()-1);  //1
+				channel_yaw      = RC_Channels::rc_channel(rcmap.yaw()-1);    //3
+		   }
+		   else
+		   {
+			   channel_roll     = rc().channel(rcmap.roll()-1);
+			   channel_pitch    = rc().channel(rcmap.pitch()-1);
+			   channel_throttle = rc().channel(rcmap.throttle()-1);
+			   channel_yaw      = rc().channel(rcmap.yaw()-1);
+		   }
 
     // set rc channel ranges
     channel_roll->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
@@ -88,33 +109,81 @@ void Copter::enable_motor_output()
     motors->output_min();
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void Copter::read_radio()
+*函数功能：读取遥控器数据
+*修改日期：2018-9-7
+*修改作者：cihang_uav
+*备注信息：rc_loops - reads user input from transmitter/receiver called at 100hz
+*************************************************************************************************************************/
 void Copter::read_radio()
 {
     const uint32_t tnow_ms = millis();
 
-    if (rc().read_input()) {
-        ap.new_radio_frame = true;
+        if(copter.g.radio_mode==1)
+        {
+            if (rc().read_input_japan_arm())           //读取遥控器输入数据
+             {
+                 ap.new_radio_frame = true;
 
-        set_throttle_and_failsafe(channel_throttle->get_radio_in());
-        set_throttle_zero_flag(channel_throttle->get_control_in());
+                 set_throttle_and_failsafe(channel_throttle->get_radio_in());
+                 set_throttle_zero_flag(channel_throttle->get_control_in());
 
-        if (!ap.rc_receiver_present) {
-            // RC receiver must be attached if we've just go input and
-            // there are no overrides
-            ap.rc_receiver_present = !RC_Channels::has_active_overrides();
+                 if (!ap.rc_receiver_present)
+                 {
+                     // RC receiver must be attached if we've just go input and
+                     // there are no overrides
+                     ap.rc_receiver_present = !RC_Channels::has_active_overrides();
+                 }
+
+                 // pass pilot input through to motors (used to allow wiggling servos while disarmed on heli, single, coax copters)
+                 radio_passthrough_to_motors();
+
+                 const float dt = (tnow_ms - last_radio_update_ms)*1.0e-3f;
+                 rc_throttle_control_in_filter.apply(channel_throttle->get_control_in(), dt);
+                 last_radio_update_ms = tnow_ms;
+                 return;
+             }
+
+
+        }
+        else
+        {
+            if (rc().read_input())
+            {
+                ap.new_radio_frame = true;
+
+                set_throttle_and_failsafe(channel_throttle->get_radio_in());
+                set_throttle_zero_flag(channel_throttle->get_control_in());
+
+                if (!ap.rc_receiver_present)
+                {
+                    // RC receiver must be attached if we've just go input and
+                    // there are no overrides
+                    ap.rc_receiver_present = !RC_Channels::has_active_overrides();
+                }
+
+                // pass pilot input through to motors (used to allow wiggling servos while disarmed on heli, single, coax copters)
+                radio_passthrough_to_motors();
+
+                const float dt = (tnow_ms - last_radio_update_ms)*1.0e-3f;
+                rc_throttle_control_in_filter.apply(channel_throttle->get_control_in(), dt);
+                last_radio_update_ms = tnow_ms;
+                return;
+            }
+
+
         }
 
-        // pass pilot input through to motors (used to allow wiggling servos while disarmed on heli, single, coax copters)
-        radio_passthrough_to_motors();
 
-        const float dt = (tnow_ms - last_radio_update_ms)*1.0e-3f;
-        rc_throttle_control_in_filter.apply(channel_throttle->get_control_in(), dt);
-        last_radio_update_ms = tnow_ms;
-        return;
-    }
+
+
+
 
     // No radio input this time
-    if (failsafe.radio) {
+    if (failsafe.radio)
+    {
         // already in failsafe!
         return;
     }
@@ -122,15 +191,18 @@ void Copter::read_radio()
     const uint32_t elapsed = tnow_ms - last_radio_update_ms;
     // turn on throttle failsafe if no update from the RC Radio for 500ms or 2000ms if we are using RC_OVERRIDE
     const uint32_t timeout = RC_Channels::has_active_overrides() ? FS_RADIO_RC_OVERRIDE_TIMEOUT_MS : FS_RADIO_TIMEOUT_MS;
-    if (elapsed < timeout) {
+    if (elapsed < timeout)
+    {
         // not timed out yet
         return;
     }
-    if (!g.failsafe_throttle) {
+    if (!g.failsafe_throttle)
+    {
         // throttle failsafe not enabled
         return;
     }
-    if (!ap.rc_receiver_present && !motors->armed()) {
+    if (!ap.rc_receiver_present && !motors->armed())
+    {
         // we only failsafe if we are armed OR we have ever seen an RC receiver
         return;
     }
@@ -139,6 +211,12 @@ void Copter::read_radio()
     Log_Write_Error(ERROR_SUBSYSTEM_RADIO, ERROR_CODE_RADIO_LATE_FRAME);
     set_failsafe_radio(true);
 }
+
+
+
+
+
+
 
 #define FS_COUNTER 3        // radio failsafe kicks in after 3 consecutive throttle values below failsafe_throttle_value
 void Copter::set_throttle_and_failsafe(uint16_t throttle_pwm)

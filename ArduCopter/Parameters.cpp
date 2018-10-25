@@ -767,7 +767,12 @@ const AP_Param::Info Copter::var_info[] = {
     // @User: Standard
     GSCALAR(Ushape_width, "U_AB_WIDTH", 5),
 
-
+    // @Param: radio_mode
+    // @DisplayName: radio_mode (none)
+    // @Description: radio
+    // @Range:
+    // @User: Standard
+	GSCALAR(radio_mode, "radio_mode", 2),  //默认是2，美国手
 
 
     // @Group: NTF_

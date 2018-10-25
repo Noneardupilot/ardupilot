@@ -1008,9 +1008,13 @@ void GCS_MAVLINK::send_system_time()
 }
 
 
-/*
-  send RC_CHANNELS messages
- */
+/***********************************************************************************************************************
+*函数原型：void GCS_MAVLINK::send_radio_in()
+*函数功能：发送遥控器通道数据
+*修改日期：2018-9-14
+*修改作者：cihang_uav
+*备注信息：send RC_CHANNELS messages
+*************************************************************************************************************************/
 void GCS_MAVLINK::send_radio_in()
 {
     AP_RSSI *rssi = AP::rssi();
@@ -1069,6 +1073,82 @@ void GCS_MAVLINK::send_radio_in()
         values[17],
         receiver_rssi);        
 }
+
+
+
+/***********************************************************************************************************************
+*函数原型：void GCS_MAVLINK::send_radio_in_japan()
+*函数功能：发送遥控器通道数据，这里是日本手的数据
+*修改日期：2018-9-14
+*修改作者：cihang_uav
+*备注信息：send RC_CHANNELS messages
+*************************************************************************************************************************/
+void GCS_MAVLINK::send_radio_in_japan()
+{
+    AP_RSSI *rssi = AP::rssi();
+    uint8_t receiver_rssi = 0;
+    if (rssi != nullptr)
+    {
+        receiver_rssi = rssi->read_receiver_rssi_uint8();
+    }
+
+    uint32_t now = AP_HAL::millis();
+    mavlink_status_t *status = mavlink_get_channel_status(chan);
+
+    uint16_t values[18] = {};
+    rc().get_radio_in(values, ARRAY_SIZE(values));
+
+    if (status && (status->flags & MAVLINK_STATUS_FLAG_OUT_MAVLINK1))
+    {
+        // for mavlink1 send RC_CHANNELS_RAW, for compatibility with OSD implementations
+        mavlink_msg_rc_channels_raw_send(
+            chan,
+            now,
+            0,
+            values[0],
+			values[2],
+			values[1],
+            values[3],
+            values[4],
+            values[5],
+            values[6],
+            values[7],
+            receiver_rssi);
+    }
+    if (!HAVE_PAYLOAD_SPACE(chan, RC_CHANNELS))
+    {
+        // can't fit RC_CHANNELS
+        return;
+    }
+    mavlink_msg_rc_channels_send(
+        chan,
+        now,
+        RC_Channels::get_valid_channel_count(),
+        values[0],
+		values[2],
+		values[1],
+        values[3],
+        values[4],
+        values[5],
+        values[6],
+        values[7],
+        values[8],
+        values[9],
+        values[10],
+        values[11],
+        values[12],
+        values[13],
+        values[14],
+        values[15],
+        values[16],
+        values[17],
+        receiver_rssi);
+}
+
+
+
+
+
 
 void GCS_MAVLINK::send_raw_imu()
 {
@@ -1345,11 +1425,19 @@ void GCS::service_statustext(void)
         }
     }
 }
-
+/***********************************************************************************************************************
+*函数原型：void GCS_MAVLINK::send_message(enum ap_message id)
+*函数功能：发送心跳包数据
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send a message using mavlink, handling message queueing
+*************************************************************************************************************************/
 void GCS::send_message(enum ap_message id)
 {
-    for (uint8_t i=0; i<num_gcs(); i++) {
-        if (chan(i).initialised) {
+    for (uint8_t i=0; i<num_gcs(); i++)
+    {
+        if (chan(i).initialised)
+        {
             chan(i).send_message(id);
         }
     }
@@ -3059,10 +3147,10 @@ bool GCS_MAVLINK::try_send_message(const enum ap_message id)
         send_position_target_global_int();
         break;
 
-    case MSG_RADIO_IN:
-        CHECK_PAYLOAD_SIZE(RC_CHANNELS_RAW);
-        send_radio_in();
-        break;
+//    case MSG_RADIO_IN:
+//        CHECK_PAYLOAD_SIZE(RC_CHANNELS_RAW);
+//        send_radio_in();
+//        break;
 
     case MSG_RAW_IMU1:
         CHECK_PAYLOAD_SIZE(RAW_IMU);

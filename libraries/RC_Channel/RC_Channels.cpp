@@ -64,7 +64,7 @@ void RC_Channels::init(void)
     //初始化通道------setup ch_in on channels
     for (uint8_t i=0; i<NUM_RC_CHANNELS; i++)
     {
-        channel(i)->ch_in = i;
+        channel(i)->ch_in = i; //初始化1-16通道
     }
 
     init_aux_all(); //初始化外部开关
@@ -94,19 +94,79 @@ uint8_t RC_Channels::get_radio_in(uint16_t *chans, const uint8_t num_channels)
 // update all the input channels
 bool RC_Channels::read_input(void)
 {
-    if (!hal.rcin->new_input() && !has_new_overrides) {
+    if (!hal.rcin->new_input() && !has_new_overrides)
+    {
         return false;
     }
 
     has_new_overrides = false;
 
     bool success = false;
-    for (uint8_t i=0; i<NUM_RC_CHANNELS; i++) {
+    for (uint8_t i=0; i<NUM_RC_CHANNELS; i++)
+    {
         success |= channel(i)->update();
     }
 
     return success;
 }
+
+/***********************************************************************************************************************
+*函数原型：bool RC_Channels::read_input_japan_arm(void)
+*函数功能：读取遥控器输入数据---更新遥控器输入数据
+*修改日期：2018-9-7
+*修改作者：cihang_uav
+*备注信息：update all the input channels
+*************************************************************************************************************************/
+bool RC_Channels::read_input_japan_arm(void)
+{
+	    if (!hal.rcin->new_input() && !has_new_overrides) //判断有数据到来了吗，has_new_overrides默认设置1,这里重点看hal.rcin->new_input()
+	    {
+	        return false;
+	    }
+
+	    has_new_overrides = false;
+
+	    bool success = false; //设置这个标志位，就是配合下面的for循环使用
+
+	 //这里判断采用美国手，还是日本手，来进行遥控器操作
+
+	   for (uint8_t i=0; i<NUM_RC_CHANNELS; i++) //NUM_RC_CHANNELS=16
+	   {
+			if((i==1)||(i==2))
+			{
+				 if(i==1)//本来是美国手，这里变成日本手
+				 {
+
+					 success |= channel(i+1)->update_japan_arm();
+				 }
+				 else if(i==2)
+				 {
+
+					 success |= channel(i-1)->update_japan_arm();
+				 }
+
+			}
+			else
+			{
+				 success |= channel(i)->update(); //其他不变化
+
+			}
+
+
+		}
+
+	    return success;
+}
+
+
+
+
+
+
+
+
+
+
 
 uint8_t RC_Channels::get_valid_channel_count(void)
 {
@@ -223,7 +283,8 @@ RC_Channel *RC_Channels::flight_mode_channel()
 void RC_Channels::reset_mode_switch()
 {
     RC_Channel *c = flight_mode_channel();
-    if (c == nullptr) {
+    if (c == nullptr)
+    {
         return;
     }
     c->reset_mode_switch();

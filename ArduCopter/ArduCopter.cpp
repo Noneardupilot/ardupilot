@@ -1,35 +1,4 @@
-/***********************************************************************************************************************
-*文件说明：应用文件头文件
-*文件功能：函数任务
-*修改日期：2018-9-7
-*修改作者：cihang_uav
-*备注信息： 编译代码：./waf configure --board fmuv5
-*备注信息： 下载代码：./waf --targets bin/arducopter --upload
-*备注信息： 更新子模块：git submodule update --init --recursive
-*备注信息： Code commit statistics can be found here: https://github.com/ArduPilot/ardupilot/graphs/contributors
-          Wiki: http://copter.ardupilot.org/
-          Requires modified version of Arduino, which can be found here: http://ardupilot.com/downloads/?category=6
-配置秘钥：  git config --global user.name "Noneardupilot"
-          git config --global user.email  "2551804348@qq.com"
-          ssh-keygen -t rsa -C "2551804348@qq.com"
 
-          git remote add origin https://github.com/Noneardupilot/ardupilot-lxw.git
-仓库地址：  https://github.com/Noneardupilot/ardupilot-lxw
-代码修改备注：
-
-          2018-10-14:增加日本手和美国手的切换
-          2018-10-15:修改实现植保AB点控制移植，其中采用八通道进行AB点打点操作，
-          2018-10-16:修改内八上锁，外八解锁
-          2018-10-18:仿真命令：sudo apt-get install build-essential---初始化编辑器
-                             cd ArduCopter
-                             ../Tools/autotest/sim_vehicle.py --console --map
-                             output add 192.168.159.1:14550
-          2018-10-24:修复自己的SITL仿真问题：
-                             case RECOND_ZIGZAG:
-                                                do_aux_function(ch_option, ch_flag);
-
-
-*************************************************************************************************************************/
 
 #include "Copter.h"
 
@@ -44,8 +13,9 @@
           should be listed here, along with how often they should be called (in hz)
           and the maximum time they are expected to take (in microseconds)
 *************************************************************************************************************************/
-const AP_Scheduler::Task Copter::scheduler_tasks[] = {
-    SCHED_TASK(rc_loop,              100,    130),
+const AP_Scheduler::Task Copter::scheduler_tasks[] =
+{
+    SCHED_TASK(rc_loop,              100,    130), //遥控器1-4通道，和5通道模式
     SCHED_TASK(throttle_loop,         50,     75),
     SCHED_TASK(update_GPS,            50,    200),
 #if OPTFLOW == ENABLED
@@ -98,10 +68,12 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK(gpsglitch_check,       10,     50),
     SCHED_TASK(landinggear_update,    10,     75),
     SCHED_TASK(lost_vehicle_check,    10,     50),
-    SCHED_TASK(gcs_update,           400,    180),
-    SCHED_TASK(gcs_send_heartbeat,     1,    110),
-    SCHED_TASK(gcs_send_deferred,     50,    550),
-    SCHED_TASK(gcs_data_stream_send,  50,    550),
+
+    SCHED_TASK(gcs_update,           400,    180), //更新数据---2.5ms
+    SCHED_TASK(gcs_send_heartbeat,     1,    110), //发送心跳包---1s
+    SCHED_TASK(gcs_send_deferred,     50,    550), //发送输入---20ms
+    SCHED_TASK(gcs_data_stream_send,  50,    550), //发送数据流--20ms
+
 #if MOUNT == ENABLED
     SCHED_TASK_CLASS(AP_Mount,             &copter.camera_mount,        update,          50,  75),
 #endif
@@ -259,19 +231,33 @@ void Copter::fast_loop()
     }
 }
 
-// rc_loops - reads user input from transmitter/receiver
-// called at 100hz
+/***********************************************************************************************************************
+*函数原型：void Copter::rc_loop()
+*函数功能：遥控循环函数--读取来自遥控器输入的数据，运行周期100hz
+*修改日期：2018-9-7
+*修改作者：cihang_uav
+*备注信息：rc_loops - reads user input from transmitter/receiver called at 100hz
+*************************************************************************************************************************/
+
 void Copter::rc_loop()
 {
-
-    // Read radio and 3-position switch on radio
+    // 读取遥控器和三段开关信息关于遥控器------Read radio and 3-position switch on radio
     // -----------------------------------------
-    read_radio();
-    rc().read_mode_switch();
+    read_radio();             //读取1-4通道数据
+    rc().read_mode_switch(); //读取5通道数据
 }
 
-// throttle_loop - should be run at 50 hz
-// ---------------------------
+
+
+
+/***********************************************************************************************************************
+*函数原型：void Copter::throttle_loop()
+*函数功能：函数任务
+*修改日期：2018-9-7
+*修改作者：cihang_uav
+*备注信息：throttle_loop - should be run at 50 hz
+*************************************************************************************************************************/
+
 void Copter::throttle_loop()
 {
     // update throttle_low_comp value (controls priority of throttle vs attitude control)
