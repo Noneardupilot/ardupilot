@@ -365,8 +365,8 @@ public:
 	    k_param_Zigzag_time = 255,
 	    k_param_Zigzag_width = 256,
 
-	    k_param_Ushape_time = 255,
-	    k_param_Ushape_width = 256,
+	    k_param_Ushape_time = 257,
+	    k_param_Ushape_width = 258,
 
         // 254,255: reserved
 
@@ -478,7 +478,6 @@ public:
 
     AP_Int32                Ushape_time;
     AP_Int8                 Ushape_width;
-
 
     AP_Int8                 radio_type;
 

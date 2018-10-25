@@ -145,9 +145,12 @@ public:
     /// update_wpnav - run the wp controller - should be called at 100hz or higher
     bool update_wpnav();
     bool update_zigzag_wpnav(void);
-    bool update_ushape_wpnav();
 
-
+    bool update_ushape_wpnav(void);
+    float get_track_covered_ushape(void);
+    void set_ushape_mode(bool mode);
+    bool advance_u_turn(float dt);
+    void set_u_turn(const Vector3f center, float direc, float radius, bool cw_flag, bool offset);
 
 
     // check_wp_leash_length - check recalc_wp_leash flag and calls calculate_wp_leash_length() if necessary
@@ -317,4 +320,16 @@ protected:
     AP_Int8     _rangefinder_use;
     bool        _rangefinder_healthy = false;
     float       _rangefinder_alt_cm = 0.0f;
+
+    bool       _mode; // u or line
+    bool       _cw_flag;
+    float      _track_covered = 0.0f;
+    float      _radius;
+    float      _angular_vel;
+    float      _angle;
+    float      _angular_vel_max;
+    float      _angular_accel;
+    float      _angle_offset;
+    Vector3f   _center;
+
 };

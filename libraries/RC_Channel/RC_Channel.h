@@ -168,7 +168,7 @@ public:
         CLEAR_WP     =        58, // clear waypoints
         SIMPLE       =        59, // simple mode
 		RECOND_ZIGZAG       =  60, // simple mode
-
+		RECOND_USHAPE       =  61, // simple mode
         // if you add something here, make sure to update the documentation of the parameter in RC_Channel.cpp!
         // also, if you add an option >255, you will need to fix duplicate_options_exist
     };
@@ -203,6 +203,12 @@ protected:
     };
     //这里定义虚函数，模仿上面函数实现在arducopter的调用----实现Z控制
     virtual void do_aux_function_zigzag(const aux_switch_pos_t ch_flag)
+    {
+    	// no action by default (e.g. Tracker, Sub, who do their own thing)
+
+    }
+    //这里定义虚函数，模仿上面函数实现在arducopter的调用----实现Z控制
+    virtual void do_aux_function_ushape(const aux_switch_pos_t ch_flag)
     {
     	// no action by default (e.g. Tracker, Sub, who do their own thing)
 

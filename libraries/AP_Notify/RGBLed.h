@@ -115,4 +115,13 @@ private:
     const uint32_t sequence_zigzag_ab_mode_erro_off = DEFINE_COLOUR_SEQUENCE_SOLID(OFF);
 
 
+    const uint32_t sequence_ushape_a = DEFINE_COLOUR_SEQUENCE_SOLID(BLUE);
+    const uint32_t sequence_ushape_b = DEFINE_COLOUR_SEQUENCE_SOLID(YELLOW);
+    const uint32_t sequence_ushape_ab_off = DEFINE_COLOUR_SEQUENCE_SOLID(OFF);
+    const uint32_t sequence_ushape_ab_mode = DEFINE_COLOUR_SEQUENCE_SOLID(GREEN);
+    const uint32_t sequence_ushape_ab_mode_off = DEFINE_COLOUR_SEQUENCE_SOLID(OFF);
+    const uint32_t sequence_ushape_ab_mode_erro = DEFINE_COLOUR_SEQUENCE_SOLID(RED);
+    const uint32_t sequence_ushape_ab_mode_erro_off = DEFINE_COLOUR_SEQUENCE_SOLID(OFF);
+
+
 };

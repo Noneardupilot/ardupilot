@@ -21,6 +21,7 @@ private:
     // called when the mode switch changes position:
     void mode_switch_changed(modeswitch_pos_t new_pos) override;
     void do_aux_function_zigzag(const aux_switch_pos_t ch_flag)override;
+    void do_aux_function_ushape(const aux_switch_pos_t ch_flag)override;
 };
 
 class RC_Channels_Copter : public RC_Channels

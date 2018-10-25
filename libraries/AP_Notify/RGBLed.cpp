@@ -217,6 +217,119 @@ uint32_t RGBLed::get_colour_sequence(void) const
     //                                                  实现Z型控制闪烁
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//                                                  实现U型控制闪烁
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // 记录用于植保的AB点信息
+            	if(AP_Notify::flags.ushape_record >1)//AP_Notify::flags.zigzag_record=16,记录A,//AP_Notify::flags.zigzag_record=81,记录B点信息
+            	{
+
+            		bool yellow = ((AP_Notify::flags.ushape_record%2) == 0)?false:true;
+            		switch(ab_point_step)  //1,2,3，4,5
+            		{
+
+            		case 0:
+            		case 1:
+            		case 2:
+            		case 3:
+            		case 4:
+
+            			if(yellow)  //记录B点闪烁黄灯0，1,2,3，4,
+            			{
+
+            				return sequence_ushape_b;
+            				// yellow on
+
+            			}
+            			else  //记录A点闪烁蓝灯5,6,7,8,9
+            			{
+            				// blue on
+            				return sequence_ushape_a ;//闪烁blue灯
+            			}
+            			break;
+
+            		case 5:
+            		case 6:
+            		case 7:
+            		case 8:
+
+            			// 亮一会，灭一会，实现闪烁
+            			return sequence_ushape_ab_off;
+            			break;
+            		case 9:
+            			if(yellow)
+            			{
+
+            				AP_Notify::flags.ushape_record /= 3;//黄灯持续闪烁4次
+            			}
+            			else
+            			{
+
+            				AP_Notify::flags.ushape_record /= 2;//蓝灯闪烁四次
+            			}
+            			return sequence_ushape_ab_off;
+            			break;
+            		}
+            	}
+                if((AP_Notify::flags.ushape_record_mode)>1)
+                {
+                	switch(ab_point_mode_step)  //1,2,3，4,5
+                	{
+
+                		case 0:
+                		case 1:
+                		case 2:
+                		case 3:
+                		case 4:
+                	           return sequence_ushape_ab_mode; //这里主要实现闪烁两下
+                	           break;
+                		case 5:
+                		case 6:
+                		case 7:
+                		case 8:
+             	               return sequence_ushape_ab_mode_off; //这里主要实现关闭
+             	               break;
+                		case 9:
+                			   AP_Notify::flags.ushape_record_mode/=2;
+            	               return sequence_ushape_ab_mode_off; //这里主要实现关闭
+            	               break;
+                	}
+
+                 }
+
+                if((AP_Notify::flags.ushape_record_mode_erro)>1)
+                {
+                	switch(ab_point_mode_step)  //1,2,3，4,5
+                	{
+
+                		case 0:
+                		case 1:
+                		case 2:
+                		case 3:
+                		case 4:
+                	           return sequence_ushape_ab_mode_erro; //这里主要实现闪烁两下
+                	           break;
+                		case 5:
+                		case 6:
+                		case 7:
+                		case 8:
+             	               return sequence_ushape_ab_mode_erro_off; //这里主要实现关闭
+             	               break;
+                		case 9:
+                			   AP_Notify::flags.ushape_record_mode_erro/=2;
+            	               return sequence_ushape_ab_mode_erro_off; //这里主要实现关闭
+            	               break;
+                	}
+
+                 }
+
+
+
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //                                                  实现u型控制闪烁
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 

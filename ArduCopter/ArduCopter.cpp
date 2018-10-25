@@ -13,7 +13,7 @@
           git config --global user.email  "2551804348@qq.com"
           ssh-keygen -t rsa -C "2551804348@qq.com"
 
-          git remote add origin https://github.com/Noneardupilot/ardupilot-lxw
+          git remote add origin https://github.com/Noneardupilot/ardupilot-lxw.git
 仓库地址：  https://github.com/Noneardupilot/ardupilot-lxw
 代码修改备注：
 
@@ -35,11 +35,15 @@
 
 #define SCHED_TASK(func, rate_hz, max_time_micros) SCHED_TASK_CLASS(Copter, &copter, func, rate_hz, max_time_micros)
 
-/*
-  scheduler table for fast CPUs - all regular tasks apart from the fast_loop()
-  should be listed here, along with how often they should be called (in hz)
-  and the maximum time they are expected to take (in microseconds)
- */
+/***********************************************************************************************************************
+*函数原型：函数任务
+*函数功能：函数任务
+*修改日期：2018-9-7
+*修改作者：cihang_uav
+*备注信息： scheduler table for fast CPUs - all regular tasks apart from the fast_loop()
+          should be listed here, along with how often they should be called (in hz)
+          and the maximum time they are expected to take (in microseconds)
+*************************************************************************************************************************/
 const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK(rc_loop,              100,    130),
     SCHED_TASK(throttle_loop,         50,     75),
@@ -201,8 +205,14 @@ void Copter::loop()
     G_Dt = scheduler.get_last_loop_time_s();
 }
 
+/***********************************************************************************************************************
+*函数原型：void Copter::fast_loop()
+*函数功能：核心主循环
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：Main loop - 400hz
+*************************************************************************************************************************/
 
-// Main loop - 400hz
 void Copter::fast_loop()
 {
     // update INS immediately to get current gyro data populated
@@ -573,3 +583,7 @@ void Copter::publish_osd_info()
 #endif
 
 AP_HAL_MAIN_CALLBACKS(&copter);
+
+/************************************************************************************************************************
+*                                  file_end
+*************************************************************************************************************************/

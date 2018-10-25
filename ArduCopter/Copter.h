@@ -960,6 +960,10 @@ private:
     ModeZigZag mode_zigzag;
 #endif
 
+#if MODE_USHAPE_ENABLED == ENABLED
+    ModeUshape mode_ushape;
+#endif
+
 
 #if MODE_GUIDED_ENABLED == ENABLED
     ModeGuided mode_guided;

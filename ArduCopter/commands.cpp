@@ -115,6 +115,17 @@ bool Copter::set_home(const Location& loc, bool lock)
 
 	  }
 
+	  if(cur_timestamp_min - g.Ushape_time > 10)
+	  {
+		// clear AB/Break Point
+		copter.mode_ushape.ushape_clear_record();
+	  }
+	  else
+	  {
+		copter.mode_ushape.ushape_load();
+
+	  }
+
 
     // log ahrs home and ekf origin dataflash
     ahrs.Log_Write_Home_And_Origin();

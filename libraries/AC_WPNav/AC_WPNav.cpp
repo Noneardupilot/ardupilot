@@ -325,98 +325,13 @@ void AC_WPNav::get_wp_stopping_point(Vector3f& stopping_point) const
     _pos_control.get_stopping_point_z(stopping_point);
 }
 
-/***********************************************************************************************************************
-*函数原型：bool AC_WPNav::update_zigzag_wpnav(void)
-*函数功能：自动控制模式
-*修改日期：2018-9-26
-*修改作者：cihang_uav
-*备注信息：zigzag_auto auto run
-*************************************************************************************************************************/
-
-bool AC_WPNav::update_zigzag_wpnav(void)
-{
-    bool ret = true;
-
-    // calculate dt
-    float dt = _pos_control.time_since_last_xy_update();
-    if (dt >= 0.2f)
-    {
-        dt = 0.0f;
-    }
-
-    // allow the accel and speed values to be set without changing
-    // out of auto mode. This makes it easier to tune auto flight
-    _pos_control.set_max_accel_xy(_wp_accel_cmss);
 
 
-    // advance the target if necessary
-    if (!advance_wp_target_along_track(dt))
-    {
-        // To-Do: handle inability to advance along track (probably because of missing terrain data)
-        ret = false;
-    }
-
-    // freeze feedforwards during known discontinuities
-    if (_flags.new_wp_destination)
-    {
-        _flags.new_wp_destination = false;
-
-    }
-
-    _pos_control.update_xy_controller(1.0f);
-    check_wp_leash_length();
-
-    _wp_last_update = AP_HAL::millis();
-
-    return ret;
-}
 
 
-/***********************************************************************************************************************
-*函数原型：bool AC_WPNav::update_zigzag_wpnav(void)
-*函数功能：自动控制模式
-*修改日期：2018-9-26
-*修改作者：cihang_uav
-*备注信息：zigzag_auto auto run
-*************************************************************************************************************************/
-
-bool AC_WPNav::update_ushape_wpnav(void)
-{
-    bool ret = true;
-
-    // calculate dt
-    float dt = _pos_control.time_since_last_xy_update();
-    if (dt >= 0.2f)
-    {
-        dt = 0.0f;
-    }
-
-    // allow the accel and speed values to be set without changing
-    // out of auto mode. This makes it easier to tune auto flight
-    _pos_control.set_max_accel_xy(_wp_accel_cmss);
 
 
-    // advance the target if necessary
-    if (!advance_wp_target_along_track(dt))
-    {
-        // To-Do: handle inability to advance along track (probably because of missing terrain data)
-        ret = false;
-    }
 
-    // freeze feedforwards during known discontinuities
-    if (_flags.new_wp_destination)
-    {
-        _flags.new_wp_destination = false;
-
-    }
-
-    _pos_control.update_xy_controller(1.0f);
-    check_wp_leash_length();
-
-    _wp_last_update = AP_HAL::millis();
-
-    return ret;
-}
 
 
 
@@ -453,9 +368,11 @@ bool AC_WPNav::advance_wp_target_along_track(float dt)
     // calculate the distance vector from the vehicle to the closest point on the segment from origin to destination
     track_error = curr_delta - track_covered_pos;
 
+
     // calculate the horizontal error
     _track_error_xy = norm(track_error.x, track_error.y);
 
+    _track_covered = _track_error_xy;
     // calculate the vertical error
     float track_error_z = fabsf(track_error.z);
 
@@ -1147,3 +1064,231 @@ float AC_WPNav::get_slow_down_speed(float dist_from_dest_cm, float accel_cmss)
         return target_speed;
     }
 }
+
+
+/***********************************************************************************************************************
+*函数原型：bool AC_WPNav::update_zigzag_wpnav(void)
+*函数功能：自动控制模式
+*修改日期：2018-9-26
+*修改作者：cihang_uav
+*备注信息：zigzag_auto auto run
+*************************************************************************************************************************/
+
+bool AC_WPNav::update_zigzag_wpnav(void)
+{
+    bool ret = true;
+
+    // calculate dt
+    float dt = _pos_control.time_since_last_xy_update();
+    if (dt >= 0.2f)
+    {
+        dt = 0.0f;
+    }
+
+    // allow the accel and speed values to be set without changing
+    // out of auto mode. This makes it easier to tune auto flight
+    _pos_control.set_max_accel_xy(_wp_accel_cmss);
+
+
+    // advance the target if necessary
+    if (!advance_wp_target_along_track(dt))
+    {
+        // To-Do: handle inability to advance along track (probably because of missing terrain data)
+        ret = false;
+    }
+
+    // freeze feedforwards during known discontinuities
+    if (_flags.new_wp_destination)
+    {
+        _flags.new_wp_destination = false;
+
+    }
+
+    _pos_control.update_xy_controller(1.0f);
+    check_wp_leash_length();
+
+    _wp_last_update = AP_HAL::millis();
+
+    return ret;
+}
+
+
+
+
+
+
+/***********************************************************************************************************************
+*函数原型：void AC_WPNav::set_u_turn(const Vector3f center, float direc, float radius, bool cw_flag, bool offset)
+*函数功能：u型转向
+*修改日期：2018-10-18
+*修改作者：cihang_uav
+*备注信息：  // direc:true cw, false ccw;
+*************************************************************************************************************************/
+void AC_WPNav::set_u_turn(const Vector3f center, float direc, float radius, bool cw_flag, bool offset)
+{
+	_center = center;    //圆心坐标
+	_radius = radius;    //绕圈半径
+	_cw_flag = cw_flag;  //绕圈方向
+	_angle = 0;          //初始化角度值
+
+    // calculate max velocity based on waypoint speed ensuring we do not use more than half our max acceleration
+	// for accelerating towards the center of the circle
+	//基于航点速度计算最大速度，确保我们不用超过一半的最大加速度来加速到圆心
+    float velocity_max = MIN(_pos_control.get_max_speed_xy(), safe_sqrt(0.5f*_pos_control.get_max_accel_xy()*_radius));
+
+    //角速度：单位是弧度/s  :angular_velocity in radians per second
+    _angular_vel_max = velocity_max/_radius;
+    //_angular_vel_max = constrain_float(ToRad(_rate),-_angular_vel_max,_angular_vel_max);
+
+    //角加速度：  angular_velocity in radians per second
+    _angular_accel = _pos_control.get_max_accel_xy()/_radius;
+
+	//_angle_vel = _pos_control
+	//Vector3f cur_vel = _inav.get_velocity();
+	//float vel = norm(cur_vel.x, cur_vel.y);
+	//_angular_vel = vel / radius;
+
+    _angular_vel = _angular_vel_max * 0.25f;//这里缩小1/4
+    _angle_offset = (offset)?M_PI:0.0f;
+    _angle_offset = _angle_offset + direc - M_PI * 0.5f;
+
+	_flags.reached_destination = false;
+	_flags.fast_waypoint = true;
+	_mode = true;
+
+}
+
+/***********************************************************************************************************************
+*函数原型：bool AC_WPNav::advance_u_turn(float dt)
+*函数功能：u型转向
+*修改日期：2018-10-18
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
+bool AC_WPNav::advance_u_turn(float dt)
+{
+	//获取当前角速度
+	Vector3f target_vel = _pos_control.get_vel_target();
+	//倾斜最大角速度----ramp angular velocity to maximum
+	if (_angular_vel < _angular_vel_max)
+	{
+		_angular_vel += fabsf(_angular_accel) * dt;
+		_angular_vel = MIN(_angular_vel, _angular_vel_max); //得到更新的角速度
+	}
+	if (_angular_vel > _angular_vel_max)
+	{
+		_angular_vel -= fabsf(_angular_accel) * dt;
+		_angular_vel = MAX(_angular_vel, _angular_vel_max);
+	}
+	//更新目标角和总的角度改变值----update the target angle and total angle traveled
+	float angle_change = _angular_vel * dt;
+	_angle += angle_change;
+
+
+	//计算目标位置-----calculate target position
+	Vector3f target;
+	if(_cw_flag)//顺时序 cw
+	{
+		target.x = _center.x + _radius * cosf(_angle_offset+_angle);
+		target.y = _center.y + _radius * sinf(_angle_offset+_angle);
+		target.z = _pos_control.get_alt_target();
+	}
+	else //逆时针ccw
+	{
+		target.x = _center.x + _radius * cosf(_angle_offset-_angle);
+		target.y = _center.y + _radius * sinf(_angle_offset-_angle);
+		target.z = _pos_control.get_alt_target();
+	}
+
+	// update position controller target
+	_pos_control.set_xy_target(target.x, target.y);
+
+	// 机头方向朝与速度方向一致
+	if (!is_zero(target_vel.x) && !is_zero(target_vel.y))
+	{
+		 set_yaw_cd(RadiansToCentiDegrees(atan2f(target_vel.y,target_vel.x)));
+	}else
+	{
+	Vector3f curr_pos = _inav.get_position();
+	set_yaw_cd(RadiansToCentiDegrees(atan2f(target.y - curr_pos.y,target.x - curr_pos.x)));
+	}
+
+	if(_angle >= M_PI)
+	{
+		_flags.reached_destination = true;
+		_mode = false;  //已经转过去方向
+	}
+	return true;
+
+}
+
+
+
+
+/***********************************************************************************************************************
+*函数原型：bool AC_WPNav::update_zigzag_wpnav(void)
+*函数功能：自动控制模式
+*修改日期：2018-9-26
+*修改作者：cihang_uav
+*备注信息：zigzag_auto auto run
+*************************************************************************************************************************/
+
+bool AC_WPNav::update_ushape_wpnav(void)
+{
+    bool ret = true;
+
+    // calculate dt
+    float dt = _pos_control.time_since_last_xy_update();
+    if (dt >= 0.2f)
+    {
+        dt = 0.0f;
+    }
+
+    // allow the accel and speed values to be set without changing
+    // out of auto mode. This makes it easier to tune auto flight
+    _pos_control.set_max_accel_xy(_wp_accel_cmss);
+
+    if(_mode)
+    {
+      //运行U型控制
+      advance_u_turn(dt);
+    }
+    else
+    {
+        // advance the target if necessary
+        if (!advance_wp_target_along_track(dt))
+        {
+            // To-Do: handle inability to advance along track (probably because of missing terrain data)
+            ret = false;
+        }
+
+    }
+
+
+    // freeze feedforwards during known discontinuities
+    if (_flags.new_wp_destination)
+    {
+        _flags.new_wp_destination = false;
+
+    }
+
+    _pos_control.update_xy_controller(1.0f);
+    check_wp_leash_length();
+
+    _wp_last_update = AP_HAL::millis();
+
+    return ret;
+}
+
+
+float AC_WPNav::get_track_covered_ushape(void)
+{
+   	return _track_covered;
+}
+
+void AC_WPNav::set_ushape_mode(bool mode)
+{
+	_mode = mode;
+}
+
+

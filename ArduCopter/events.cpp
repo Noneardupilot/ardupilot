@@ -73,6 +73,12 @@ void Copter::handle_battery_failsafe(const char *type_str, const int8_t action)
 					copter.mode_zigzag.zigzag_set_bp_mode(Zigzag_PowerNone);
 
 				}
+				else if(control_mode == USHAPE)
+				{
+					set_mode_RTL_or_land_with_pause(MODE_REASON_BATTERY_FAILSAFE);
+					copter.mode_ushape.ushape_set_bp_mode(Ushape_PowerNone);
+
+				}
 				else
 				{
 					 set_mode_RTL_or_land_with_pause(MODE_REASON_BATTERY_FAILSAFE);

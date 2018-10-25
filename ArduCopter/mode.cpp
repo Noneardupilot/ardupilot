@@ -163,6 +163,12 @@ Copter::Mode *Copter::mode_from_mode_num(const uint8_t mode)
             break;
 #endif
 
+#if MODE_USHAPE_ENABLED == ENABLED
+        case USHAPE:
+            ret = &mode_ushape;
+            break;
+#endif
+
 
 
 
@@ -294,6 +300,18 @@ void Copter::exit_mode(Copter::Mode *&old_flightmode,
         		copter.mode_zigzag.zigzag_waypoint_state.flag = copter.mode_zigzag.zigzag_waypoint_state.flag << 1;
         	}
         }
+
+        else if(old_flightmode == &mode_ushape)
+        {
+        	copter.mode_ushape.ushape_stop();
+        	copter.mode_ushape.ushape_save();
+
+        	if(motors->armed())
+        	{
+        		copter.mode_ushape.ushape_waypoint_state.flag = copter.mode_ushape.ushape_waypoint_state.flag << 1;
+        	}
+        }
+
 
     // smooth throttle transition when switching from manual to automatic flight modes
     if (old_flightmode->has_manual_throttle() && !new_flightmode->has_manual_throttle() && motors->armed() && !ap.land_complete) {

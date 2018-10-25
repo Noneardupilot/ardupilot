@@ -451,6 +451,7 @@ void RC_Channel::init_aux_function(const aux_func_t ch_option, const aux_switch_
     case GRIPPER:
     case SPRAYER:
     case RECOND_ZIGZAG:
+    case RECOND_USHAPE:
         do_aux_function(ch_option, ch_flag); //根据上面的参数设置相对应的功能
         break;
     default:
@@ -647,9 +648,15 @@ void RC_Channel::do_aux_function(const aux_func_t ch_option, const aux_switch_po
         do_aux_function_lost_vehicle_sound(ch_flag);
         break;
 
-    case RECOND_ZIGZAG:   //开关切换到60，就是表示执行植保模式
+    case RECOND_ZIGZAG:   //开关切换到60，就是表示执行植保模式Z
 
     	do_aux_function_zigzag(ch_flag); //这个函数直接会调用应用层的RC_Channel.cpp
+        break;
+
+
+    case RECOND_USHAPE:   //开关切换到61，就是表示执行植保模式U
+
+    	do_aux_function_ushape(ch_flag); //这个函数直接会调用应用层的RC_Channel.cpp
         break;
 
     default:

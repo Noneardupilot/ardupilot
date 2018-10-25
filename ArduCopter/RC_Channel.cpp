@@ -111,6 +111,57 @@ void RC_Channel_Copter::do_aux_function_zigzag(const aux_switch_pos_t ch_flag)
 }
 
 
+/***********************************************************************************************************************
+*函数原型：void RC_Channel_Copter::do_aux_function_ushape(const aux_switch_pos_t ch_flag)
+*函数功能：执行zigzag动作模式
+*修改日期：2018-9-27
+*修改作者：cihang_uav
+*备注信息：hal.uartG->printf("copter.control_mode=%d\r\n",copter.control_mode);
+         hal.uartG->printf("CHANG123\r\n");
+*************************************************************************************************************************/
+void RC_Channel_Copter::do_aux_function_ushape(const aux_switch_pos_t ch_flag)
+{
+
+	    switch (ch_flag)
+	    {
+			case HIGH:  //如果是高电平，就设置记录A点
+			{
+			  	if(copter.control_mode != 5 && copter.control_mode != 16)
+			    {
+			          return;
+			    }
+				if(copter.mode_ushape.ushape_record_point(true))
+				{
+					gcs().send_text(MAV_SEVERITY_WARNING,"U Start Record A point"); //发送自动信息
+					AP_Notify::flags.ushape_record = 16; // 2^4 = 16 means flash blue 4 seconds
+
+				}
+				break;
+
+			}
+			case MIDDLE: //这里什么都不执行
+
+				break;
+			case LOW:
+			{
+				//如果没有在定点，模式下直接返回就可以
+			  	if(copter.control_mode != 5 && copter.control_mode != 16)
+			    {
+			          return;
+			    }
+				if(copter.mode_ushape.ushape_record_point(false))
+				{
+			  		gcs().send_text(MAV_SEVERITY_WARNING," U Start Record B point"); //发送自动信息
+			  		AP_Notify::flags.ushape_record = 81; // 3^4 = 81 means flash yellow 4 seconds
+
+				}
+			  		break;
+
+			}
+	    }
+
+}
+
 
 
 
@@ -166,6 +217,7 @@ void RC_Channel_Copter::init_aux_function(const aux_func_t ch_option, const aux_
     case INVERTED:
     case WINCH_ENABLE:
     case RECOND_ZIGZAG:
+    case RECOND_USHAPE:
         do_aux_function(ch_option, ch_flag);
         break;
     // the following functions do not need to be initialised:

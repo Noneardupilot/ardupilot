@@ -163,7 +163,7 @@ void Copter::ModeUshape::run()
 	    case Ushape_Auto:
 
 
-	    	if(ushape_auto_complete_state && !ushape_change_yaw) //第一次：zigzag_auto_complete_state=1，zigzag_change_yaw=0;
+	    	if(ushape_auto_complete_state && !ushape_change_yaw) //第一次：zigzag_auto_complete_state=0，zigzag_change_yaw=0;不会进入if
 	    	{
 
 	           wp_nav->wp_and_spline_init();
@@ -458,17 +458,17 @@ void Copter::ModeUshape::ushape_set_destination(void)
 
 		ushape_calculate_next_dest(next, ushape_waypoint_state.index);
 
-
+		// 从第一个点开始走U形,并调整机头，机头朝向与飞行方向一致
 	       if((ushape_waypoint_state.fly_direc < Ushape_A2B )) //说明是走的U型弧线
 			{
 	    	    //求出圆心
-				Vector3f ziazag_point_prev = pos_control->get_pos_target();
+				Vector3f ziazag_point_prev = pos_control->get_pos_target();  //获取当前位置
 				center.x  = (ziazag_point_prev.x + next.x) * 0.5f;
 				center.y  = (ziazag_point_prev.y + next.y) * 0.5f;
 				center.z  = next.z;
 
-
-				bool pi_flag = (ushape_waypoint_state.direct > 0)?true:false;
+               //ushape_waypoint_state.direct=-1右边飞行，ushape_waypoint_state.direct=1左边飞行
+				bool pi_flag = (ushape_waypoint_state.direct > 0)?true:false;  //pi_flag=0右边
 				bool cw_flag;
 				if(ushape_waypoint_state.direct > 0) //左边飞行
 				{
@@ -476,7 +476,7 @@ void Copter::ModeUshape::ushape_set_destination(void)
 				}
 				else               //右边飞行
 				{
-					cw_flag = (ushape_waypoint_state.fly_direc == Ushape_A2A)?false:true;
+					cw_flag = (ushape_waypoint_state.fly_direc == Ushape_A2A)?false:true; //cw_flag=1,顺时针飞行
 				}
                 //圆心坐标-----航向角度------设定的宽度，也就是半径-------确地哪个U型-----顺时针，还是逆时针运行
 				wp_nav->set_u_turn(center, ushape_radians(ushape_bearing * 0.01f), ushape_waypoint_state.width * 0.5f, cw_flag, pi_flag);
@@ -503,6 +503,7 @@ void Copter::ModeUshape::ushape_set_destination(void)
 		wp_nav->set_wp_destination(ushape_waypoint_state.vBP_pos, false);
 
 		ushape_waypoint_state.flag = 0x05;
+		wp_nav->set_ushape_mode(false);
 		// stop sprayer
 	//	copter.sprayer.run(false);
 		break;
@@ -553,7 +554,7 @@ void Copter::ModeUshape::ushape_set_destination(void)
 			break;
 		}
 		wp_nav->set_wp_destination(next, false);
-
+		wp_nav->set_ushape_mode(false);
 		// stop sprayer
 		//copter.sprayer.run(false);
 
@@ -570,7 +571,7 @@ void Copter::ModeUshape::ushape_set_destination(void)
 *修改作者：cihang_uav
 *备注信息：
 *************************************************************************************************************************/
-void Copter::ModeUshape::ushape_calculate_next_dest(/*Location_Class& dest*/Vector3f& next, uint16_t index)
+void Copter::ModeUshape::ushape_calculate_next_dest(Vector3f& next, uint16_t index)
 {
 	Vector3f v_A2B  = ushape_waypoint_state.vB_pos - ushape_waypoint_state.vA_pos;
 	v_A2B.z = 0;
@@ -642,13 +643,13 @@ void Copter::ModeUshape::ushape_calculate_next_dest(/*Location_Class& dest*/Vect
 
 
 /***********************************************************************************************************************
-*函数原型：void Copter::Ushape::ushape_set_bp_mode(Ushape_BPMode bp_mode)
+*函数原型：void Copter::Ushape::ushape_set_bp_mode(UshapeBPMode bp_mode)
 *函数功能：设置AB点模式
 *修改日期：2018-10-18
 *修改作者：cihang_uav
 *备注信息：
 *************************************************************************************************************************/
-void Copter::ModeUshape::ushape_set_bp_mode(Ushape_BPMode bp_mode)
+void Copter::ModeUshape::ushape_set_bp_mode(UshapeBPMode bp_mode)
 {
 	ushape_waypoint_state.bp_mode = bp_mode;
 }
@@ -662,7 +663,7 @@ void Copter::ModeUshape::ushape_set_bp_mode(Ushape_BPMode bp_mode)
 *************************************************************************************************************************/
 void Copter::ModeUshape::ushape_stop()
 {
-	if(ushape_mode == USHAPE_Auto && ushape_rc_state != RC_MID)
+	if(ushape_mode == Ushape_Auto && ushape_rc_state != RC_MID)
 	{
 		ushape_auto_stop();
 		ushape_waypoint_state.bp_mode = Ushape_ModeSwitch;

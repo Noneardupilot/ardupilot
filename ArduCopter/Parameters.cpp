@@ -732,6 +732,13 @@ const AP_Param::Info Copter::var_info[] = {
 #endif
 
 
+	// @Param: radio_type
+	    // @DisplayName: radio_type
+	    // @Description: radio_type width
+	    // @Range: 0-1 0:futaba 1:cihang's radio
+	    // @User: Standard
+	    GSCALAR(radio_type, "rc_type", 0),
+
     // @Param: Zigzag_time
     // @DisplayName: Zigzag_time
     // @Description: AB/Break Point record time(minutes)
@@ -964,6 +971,55 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("LAND_ALT_LOW", 25, ParametersG2, land_alt_low, 1000),
 
+
+	 AP_GROUPINFO("apos_lat", 29, ParametersG2, aPos_lat, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("apos_lng", 30, ParametersG2, aPos_lng, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("apos_alt", 31, ParametersG2, aPos_alt, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("bpos_lat", 32, ParametersG2, bPos_lat, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("bpos_lng", 33, ParametersG2, bPos_lng, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("bpos_alt", 34, ParametersG2, bPos_alt, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("bppos_lat", 35, ParametersG2, bpPos_lat, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("bppos_lng", 36, ParametersG2, bpPos_lng, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("bppos_alt", 37, ParametersG2, bpPos_alt, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("ab_index", 38, ParametersG2, ab_index, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("ab_dirct", 39, ParametersG2, ab_dirct, 0),
+
+	 //
+	 //
+	 AP_GROUPINFO("ab_bpmode", 40, ParametersG2, ab_bpMode, 0),
+
+
+
 #if !HAL_MINIMIZE_FEATURES && OPTFLOW == ENABLED
     // @Group: FHLD
     // @Path: mode_flowhold.cpp
@@ -980,53 +1036,8 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     AP_SUBGROUPINFO(user_parameters, "USR", 28, ParametersG2, UserParameters),
 #endif
 
-	//
-		     //
-		     AP_GROUPINFO("apos_lat", 29, ParametersG2, aPos_lat, 0),
 
-		     //
-		     //
-		     AP_GROUPINFO("apos_lng", 30, ParametersG2, aPos_lng, 0),
 
-		     //
-		     //
-		     AP_GROUPINFO("apos_alt", 31, ParametersG2, aPos_alt, 0),
-
-		     //
-		     //
-		     AP_GROUPINFO("bpos_lat", 32, ParametersG2, bPos_lat, 0),
-
-		     //
-		     //
-		     AP_GROUPINFO("bpos_lng", 33, ParametersG2, bPos_lng, 0),
-
-		     //
-		     //
-		     AP_GROUPINFO("bpos_alt", 34, ParametersG2, bPos_alt, 0),
-
-		     //
-		     //
-		     AP_GROUPINFO("bppos_lat", 35, ParametersG2, bpPos_lat, 0),
-
-		     //
-		     //
-		     AP_GROUPINFO("bppos_lng", 36, ParametersG2, bpPos_lng, 0),
-
-		     //
-		     //
-		     AP_GROUPINFO("bppos_alt", 37, ParametersG2, bpPos_alt, 0),
-
-		     //
-		     //
-		     AP_GROUPINFO("ab_index", 38, ParametersG2, ab_index, 0),
-
-		     //
-		     //
-		     AP_GROUPINFO("ab_dirct", 39, ParametersG2, ab_dirct, 0),
-
-		     //
-		     //
-		     AP_GROUPINFO("ab_bpmode", 40, ParametersG2, ab_bpMode, 0),
 
 
 

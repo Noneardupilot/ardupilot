@@ -1445,12 +1445,12 @@ public:
 		} ushape_waypoint_state;
 
 
-		   void ushape_manual_control(void);
+		    void ushape_manual_control(void);
 			void ushape_auto_control(void);
 
 		    void ushape_calculate_next_dest(Vector3f& next, uint16_t index);
 		    void ushape_set_destination(void);
-		    void ushape_set_bp_mode(ZigzagBPMode bp_mode);
+		    void ushape_set_bp_mode(UshapeBPMode bp_mode);
 		    void ushape_stop(void);
 		    void ushape_auto_stop(void);
 			bool ushape_record_point(bool aPoint);

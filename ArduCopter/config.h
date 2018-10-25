@@ -307,7 +307,11 @@
 # define MODE_ZIGZAG_ENABLED !HAL_MINIMIZE_FEATURES
 #endif
 
-
+//////////////////////////////////////////////////////////////////////////////
+// ushape - follow another vehicle or GCS
+#ifndef MODE_USHAPE_ENABLED
+# define MODE_USHAPE_ENABLED !HAL_MINIMIZE_FEATURES
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // Guided mode - control vehicle's position or angles from GCS
