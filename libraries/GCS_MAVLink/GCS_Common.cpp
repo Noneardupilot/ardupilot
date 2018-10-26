@@ -1045,7 +1045,8 @@ void GCS_MAVLINK::send_radio_in()
             values[7],
             receiver_rssi);
     }
-    if (!HAVE_PAYLOAD_SPACE(chan, RC_CHANNELS)) {
+    if (!HAVE_PAYLOAD_SPACE(chan, RC_CHANNELS))
+    {
         // can't fit RC_CHANNELS
         return;
     }
@@ -1443,16 +1444,27 @@ void GCS::send_message(enum ap_message id)
     }
 }
 
+/***********************************************************************************************************************
+*函数原型：void GCS::retry_deferred()
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void GCS::retry_deferred()
 {
-    for (uint8_t i=0; i<num_gcs(); i++) {
-        if (chan(i).initialised) {
+    for (uint8_t i=0; i<num_gcs(); i++)
+    {
+        if (chan(i).initialised)
+        {
             chan(i).retry_deferred();
         }
     }
     WITH_SEMAPHORE(_statustext_sem);
     service_statustext();
 }
+
+
 
 void GCS::data_stream_send()
 {

@@ -163,12 +163,22 @@ bool RC_Channel::update(void)
 
 bool RC_Channel::update_japan_arm(void)
 {
+
+
     if (has_override() && !(*RC_Channels::options & RC_IGNORE_OVERRIDES))
     {
         radio_in = override_value;
     } else if (!(*RC_Channels::options & RC_IGNORE_RECEIVER))
     {
-        radio_in = 3000-hal.rcin->read(ch_in);
+    	if((ch_in==1)||(ch_in==2))
+    	{
+    		radio_in = 3000-hal.rcin->read(ch_in);
+
+//    		hal.uartG->printf("ch_in=%d\r\n",ch_in);
+//    		hal.uartG->printf("radio_in=%d\r\n",radio_in);
+//    		hal.uartG->printf("control_in=%d\r\n",control_in);
+    	}
+
     } else
     {
         return false;
@@ -182,7 +192,6 @@ bool RC_Channel::update_japan_arm(void)
         //RC_CHANNEL_TYPE_ANGLE
         control_in = pwm_to_angle();
     }
-
     return true;
 }
 

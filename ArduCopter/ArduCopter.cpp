@@ -23,7 +23,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] =
 #endif
     SCHED_TASK(update_batt_compass,   10,    120),
     SCHED_TASK(read_aux_all,          10,     50),
-    SCHED_TASK(arm_motors_check,      10,     50),
+    SCHED_TASK(arm_motors_check,      10,     50), //解锁，上锁实现代码
 #if TOY_MODE_ENABLED == ENABLED
     SCHED_TASK_CLASS(ToyMode,              &copter.g2.toy_mode,         update,          10,  50),
 #endif

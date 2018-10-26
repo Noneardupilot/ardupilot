@@ -7,78 +7,114 @@
 
 static uint32_t auto_disarm_begin;
 
-// arm_motors_check - checks for pilot input to arm or disarm the copter
-// called at 10hz
+
+/***********************************************************************************************************************
+*函数原型：void Copter::arm_motors_check()
+*函数功能：解锁、上锁代码
+*修改日期：2018-9-7
+*修改作者：cihang_uav
+*备注信息：arm_motors_check - checks for pilot input to arm or disarm the copter called at 10hz
+*************************************************************************************************************************/
+
 void Copter::arm_motors_check()
 {
-    static int16_t arming_counter;
 
+    static int16_t arming_counter;
     // check if arming/disarm using rudder is allowed
     AP_Arming::ArmingRudder arming_rudder = arming.get_rudder_arming_type();
-    if (arming_rudder == AP_Arming::ARMING_RUDDER_DISABLED) {
+    if (arming_rudder == AP_Arming::ARMING_RUDDER_DISABLED)
+    {
         return;
     }
 
 #if TOY_MODE_ENABLED == ENABLED
-    if (g2.toy_mode.enabled()) {
+    if (g2.toy_mode.enabled())
+    {
         // not armed with sticks in toy mode
         return;
     }
 #endif
 
-    // ensure throttle is down
-    if (channel_throttle->get_control_in() > 0) {
+    //必须保证油门是最低的，否则一切都是徒劳-----ensure throttle is down
+
+//    hal.uartG->printf("channel_throttle->get_control_in()=%d\r\n",channel_throttle->get_control_in());
+    if (channel_throttle->get_control_in() > 0)
+    {
         arming_counter = 0;
         return;
     }
+	 int16_t yaw_in = channel_yaw->get_control_in();
+	 int16_t roll_in = channel_roll->get_control_in();
+	 int16_t pitch_in = channel_pitch->get_control_in();
 
-    int16_t yaw_in = channel_yaw->get_control_in();
+//	    hal.uartG->printf("yaw_in=%d\r\n",yaw_in);
+//	    hal.uartG->printf("roll_in=%d\r\n",roll_in);
+//	    hal.uartG->printf("pitch_in=%d\r\n",pitch_in);
+    	    // full right
 
-    // full right
-    if (yaw_in > 4000) {
+    	    if((yaw_in > 4000)&&(roll_in<-4000)&&(pitch_in>4000))//
+    	    {
+    	    	//增加解锁计数到最大10s
+    	        // increase the arming counter to a maximum of 1 beyond the auto trim counter
+    	        if (arming_counter <= AUTO_TRIM_DELAY)
+    	        {
+    	            arming_counter++;
+    	        }
 
-        // increase the arming counter to a maximum of 1 beyond the auto trim counter
-        if (arming_counter <= AUTO_TRIM_DELAY) {
-            arming_counter++;
-        }
+    	        //解锁电机，进行配置飞行--------arm the motors and configure for flight
+    	        if (arming_counter == ARM_DELAY && !motors->armed())
+    	        {
+    	        	// 复位电机解锁计数，如果解锁失败了-----reset arming counter if arming fail
+    	            if (!init_arm_motors(AP_Arming::ArmingMethod::RUDDER))
+    	            {
+    	                arming_counter = 0;
+    	            }
+    	        }
 
-        // arm the motors and configure for flight
-        if (arming_counter == ARM_DELAY && !motors->armed()) {
-            // reset arming counter if arming fail
-            if (!init_arm_motors(AP_Arming::ArmingMethod::RUDDER)) {
-                arming_counter = 0;
-            }
-        }
+    	        //解锁电机配置飞行---arm the motors and configure for flight
+    	        if (arming_counter == AUTO_TRIM_DELAY && motors->armed() && control_mode == STABILIZE)
+    	        {
+    	            auto_trim_counter = 250;
+    	            // ensure auto-disarm doesn't trigger immediately
+    	            auto_disarm_begin = millis();
+    	        }
 
-        // arm the motors and configure for flight
-        if (arming_counter == AUTO_TRIM_DELAY && motors->armed() && control_mode == STABILIZE) {
-            auto_trim_counter = 250;
-            // ensure auto-disarm doesn't trigger immediately
-            auto_disarm_begin = millis();
-        }
+    	    // full left and rudder disarming is enabled
+    	    }
+    	    else if ((yaw_in < -4000)&&(roll_in>4000)&&(pitch_in>4000)&&(arming_rudder == AP_Arming::ARMING_RUDDER_ARMDISARM)) //实现外八，上锁
 
-    // full left and rudder disarming is enabled
-    } else if ((yaw_in < -4000) && (arming_rudder == AP_Arming::ARMING_RUDDER_ARMDISARM)) {
-        if (!flightmode->has_manual_throttle() && !ap.land_complete) {
-            arming_counter = 0;
-            return;
-        }
+    	    {
+    	        if (!flightmode->has_manual_throttle() && !ap.land_complete)
+    	        {
+    	            arming_counter = 0;
+    	            return;
+    	        }
 
-        // increase the counter to a maximum of 1 beyond the disarm delay
-        if (arming_counter <= DISARM_DELAY) {
-            arming_counter++;
-        }
+    	        // increase the counter to a maximum of 1 beyond the disarm delay
+    	        if (arming_counter <= DISARM_DELAY)
+    	        {
+    	            arming_counter++;
+    	        }
 
-        // disarm the motors
-        if (arming_counter == DISARM_DELAY && motors->armed()) {
-            init_disarm_motors();
-        }
+    	        //上锁电机-----disarm the motors
+    	        if (arming_counter == DISARM_DELAY && motors->armed())
+    	        {
+    	            init_disarm_motors();
+    	        }
 
-    // Yaw is centered so reset arming counter
-    } else {
-        arming_counter = 0;
-    }
+    	        //偏航在正中间时，开始复位计数------- Yaw is centered so reset arming counter
+    	    } else
+    	    {
+    	        arming_counter = 0;
+    	    }
+
+
 }
+
+
+
+
+
 
 // auto_disarm_check - disarms the copter if it has been sitting on the ground in manual mode with throttle low for at least 15 seconds
 void Copter::auto_disarm_check()

@@ -19,9 +19,18 @@ void Copter::default_dead_zones()
     rc().channel(CH_6)->set_default_dead_zone(0);
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void Copter::init_rc_in()
+*函数功能：初始化遥控器输入
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void Copter::init_rc_in()
 {
 
+	      //这里可以不用这样写，直接保留默认else就行，为了看代码方便
 		   if(copter.g.radio_mode==2)         //g.radio_mode=2设置成美国手，否则设置成g.radio_mode=1，则是日本手，其他情况都是美国手
 		   {
 			  //  hal.console->printf("g.radio_mode=%d\r\n",(int)g.radio_mode);
@@ -29,15 +38,35 @@ void Copter::init_rc_in()
 				channel_pitch    = RC_Channels::rc_channel(rcmap.pitch()-1);     //1
 				channel_throttle = RC_Channels::rc_channel(rcmap.throttle()-1);  //2
 				channel_yaw      = RC_Channels::rc_channel(rcmap.yaw()-1);       //3
+			    //设置rc通道的范围值-------set rc channel ranges
+			    channel_roll->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
+			    channel_pitch->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
+			    channel_yaw->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
+			    channel_throttle->set_range(1000);
 
 		   }
 		   else if (copter.g.radio_mode==1)   //这里要进行切换初始化，设置日本手
 		   {
-			//	hal.console->printf("g.radio_mode=%d\r\n",(int)g.radio_mode);
-				channel_roll     = RC_Channels::rc_channel(rcmap.roll()-1);   //0
-				channel_pitch = RC_Channels::rc_channel(rcmap.throttle()-1);  //2
-				channel_throttle = RC_Channels::rc_channel(rcmap.pitch()-1);  //1
-				channel_yaw      = RC_Channels::rc_channel(rcmap.yaw()-1);    //3
+			    hal.uartG->printf("JAPAN\r\n"); //loop_us=2500,这个单位是us
+				channel_roll     = RC_Channels::rc_channel(rcmap.roll()-1);      //0
+
+				channel_throttle = RC_Channels::rc_channel(rcmap.pitch()-1);     //1
+
+
+				channel_pitch = RC_Channels::rc_channel(rcmap.throttle()-1);     //2
+
+				channel_yaw      = RC_Channels::rc_channel(rcmap.yaw()-1);       //3
+			    //设置rc通道的范围值-------set rc channel ranges
+			    channel_roll->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
+			    channel_pitch->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
+			    channel_yaw->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
+
+			    channel_throttle->set_range(1000);
+
+				hal.uartG->printf("rcmap.roll()=%d\r\n",rcmap.roll());
+				hal.uartG->printf("rcmap.throttle()=%d\r\n",rcmap.throttle());
+				hal.uartG->printf("rcmap.pitch()=%d\r\n",rcmap.pitch());
+				hal.uartG->printf("rcmap.yaw()=%d\r\n",rcmap.yaw());
 		   }
 		   else
 		   {
@@ -45,15 +74,17 @@ void Copter::init_rc_in()
 			   channel_pitch    = rc().channel(rcmap.pitch()-1);
 			   channel_throttle = rc().channel(rcmap.throttle()-1);
 			   channel_yaw      = rc().channel(rcmap.yaw()-1);
+
+			    //设置rc通道的范围值-------set rc channel ranges
+			    channel_roll->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
+			    channel_pitch->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
+			    channel_yaw->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
+			    channel_throttle->set_range(1000);
 		   }
 
-    // set rc channel ranges
-    channel_roll->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
-    channel_pitch->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
-    channel_yaw->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
-    channel_throttle->set_range(1000);
 
-    //set auxiliary servo ranges
+
+    //设置外部开关的范围值------set auxiliary servo ranges
     rc().channel(CH_5)->set_range(1000);
     rc().channel(CH_6)->set_range(1000);
     rc().channel(CH_7)->set_range(1000);
@@ -66,6 +97,15 @@ void Copter::init_rc_in()
     ap.throttle_zero = true;
 }
 
+
+
+/***********************************************************************************************************************
+*函数原型：void Copter::init_ardupilot()
+*函数功能：初始化
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
  // init_rc_out -- initialise motors and check if pilot wants to perform ESC calibration
 void Copter::init_rc_out()
 {
@@ -125,6 +165,7 @@ void Copter::read_radio()
         {
             if (rc().read_input_japan_arm())           //读取遥控器输入数据
              {
+//            	gcs().send_text(MAV_SEVERITY_WARNING,"Japan arm"); //发送自动信息
                  ap.new_radio_frame = true;
 
                  set_throttle_and_failsafe(channel_throttle->get_radio_in());

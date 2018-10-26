@@ -134,16 +134,7 @@ bool RC_Channels::read_input_japan_arm(void)
 	   {
 			if((i==1)||(i==2))
 			{
-				 if(i==1)//本来是美国手，这里变成日本手
-				 {
-
-					 success |= channel(i+1)->update_japan_arm();
-				 }
-				 else if(i==2)
-				 {
-
-					 success |= channel(i-1)->update_japan_arm();
-				 }
+					 success |= channel(i)->update_japan_arm();
 
 			}
 			else
@@ -151,7 +142,6 @@ bool RC_Channels::read_input_japan_arm(void)
 				 success |= channel(i)->update(); //其他不变化
 
 			}
-
 
 		}
 
@@ -224,9 +214,11 @@ void RC_Channels::read_aux_all()
         return;
     }
 
-    for (uint8_t i=0; i<NUM_RC_CHANNELS; i++) {
+    for (uint8_t i=0; i<NUM_RC_CHANNELS; i++)
+    {
         RC_Channel *c = channel(i);
-        if (c == nullptr) {
+        if (c == nullptr)
+        {
             continue;
         }
         c->read_aux();

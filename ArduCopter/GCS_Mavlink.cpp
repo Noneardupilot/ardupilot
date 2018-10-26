@@ -21,7 +21,7 @@ void Copter::gcs_send_heartbeat(void)
 *函数功能：更新数据（寻找输入命令在GCS链路上）
 *修改日期：2018-9-12
 *修改作者：cihang_uav
-*备注信息：look for incoming commands on the GCS links
+*备注信息：
 *************************************************************************************************************************/
 void Copter::gcs_send_deferred(void)
 {
@@ -37,12 +37,24 @@ void Copter::gcs_send_deferred(void)
  *  stack needed for each message type. Please be careful to follow the
  *  pattern below when adding any new messages
  */
-
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_deferred(void)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 MAV_TYPE GCS_MAVLINK_Copter::frame_type() const
 {
     return copter.get_frame_mav_type();
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_deferred(void)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 MAV_MODE GCS_MAVLINK_Copter::base_mode() const
 {
     uint8_t _base_mode = MAV_MODE_FLAG_STABILIZE_ENABLED;
@@ -92,13 +104,25 @@ MAV_MODE GCS_MAVLINK_Copter::base_mode() const
 
     return (MAV_MODE)_base_mode;
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_deferred(void)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 uint32_t GCS_MAVLINK_Copter::custom_mode() const
 {
     return copter.control_mode;
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_deferred(void)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 MAV_STATE GCS_MAVLINK_Copter::system_status() const
 {
     // set system as critical if any failsafe have triggered
@@ -113,7 +137,13 @@ MAV_STATE GCS_MAVLINK_Copter::system_status() const
     return MAV_STATE_ACTIVE;
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_deferred(void)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void GCS_MAVLINK_Copter::send_position_target_global_int()
 {
     Location_Class target;
@@ -138,6 +168,13 @@ void GCS_MAVLINK_Copter::send_position_target_global_int()
         0.0f); // yaw_rate
 }
 
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_deferred(void)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 #if AC_FENCE == ENABLED
 NOINLINE void Copter::send_fence_status(mavlink_channel_t chan)
 {
@@ -145,7 +182,13 @@ NOINLINE void Copter::send_fence_status(mavlink_channel_t chan)
 }
 #endif
 
-
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_deferred(void)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 NOINLINE void Copter::send_extended_status1(mavlink_channel_t chan)
 {
     int16_t battery_current = -1;
@@ -172,6 +215,14 @@ NOINLINE void Copter::send_extended_status1(mavlink_channel_t chan)
         0, 0, 0, 0);
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_deferred(void)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void NOINLINE Copter::send_nav_controller_output(mavlink_channel_t chan)
 {
     const Vector3f &targets = attitude_control->get_att_target_euler_cd();
@@ -187,14 +238,28 @@ void NOINLINE Copter::send_nav_controller_output(mavlink_channel_t chan)
         flightmode->crosstrack_error() * 1.0e-2f);
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void Copter::gcs_send_deferred(void)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 int16_t GCS_MAVLINK_Copter::vfr_hud_throttle() const
 {
     return (int16_t)(copter.motors->get_throttle() * 100);
 }
 
-/*
-  send RPM packet
- */
+
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
+
 void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
 {
 #if RPM_ENABLED == ENABLED
@@ -208,6 +273,13 @@ void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
 }
 
 
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 /*
   send PID tuning message
  */
@@ -268,11 +340,25 @@ void Copter::send_pid_tuning(mavlink_channel_t chan)
     }
 }
 
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 uint8_t GCS_MAVLINK_Copter::sysid_my_gcs() const
 {
     return copter.g.sysid_my_gcs;
 }
 
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 uint32_t GCS_MAVLINK_Copter::telem_delay() const
 {
     return (uint32_t)(copter.g.telem_delay);
@@ -574,6 +660,14 @@ const struct GCS_MAVLINK::stream_entries GCS_MAVLINK::all_stream_entries[] = {
     MAV_STREAM_TERMINATOR // must have this at end of stream_entries
 };
 
+
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 bool GCS_MAVLINK_Copter::handle_guided_request(AP_Mission::Mission_Command &cmd)
 {
 #if MODE_AUTO_ENABLED == ENABLED
@@ -583,6 +677,14 @@ bool GCS_MAVLINK_Copter::handle_guided_request(AP_Mission::Mission_Command &cmd)
 #endif
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 void GCS_MAVLINK_Copter::handle_change_alt_request(AP_Mission::Mission_Command &cmd)
 {
     // add home alt if needed
@@ -593,6 +695,14 @@ void GCS_MAVLINK_Copter::handle_change_alt_request(AP_Mission::Mission_Command &
     // To-Do: update target altitude for loiter or waypoint controller depending upon nav mode
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 void GCS_MAVLINK_Copter::packetReceived(const mavlink_status_t &status,
                                         mavlink_message_t &msg)
 {
@@ -609,6 +719,13 @@ void GCS_MAVLINK_Copter::packetReceived(const mavlink_status_t &status,
     GCS_MAVLINK::packetReceived(status, msg);
 }
 
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 bool GCS_MAVLINK_Copter::params_ready() const
 {
     if (AP_BoardConfig::in_sensor_config_error()) {
@@ -621,22 +738,43 @@ bool GCS_MAVLINK_Copter::params_ready() const
     return copter.ap.initialised_params;
 }
 
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 void GCS_MAVLINK_Copter::send_banner()
 {
     GCS_MAVLINK::send_banner();
     send_text(MAV_SEVERITY_INFO, "Frame: %s", copter.get_frame_string());
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 void GCS_MAVLINK_Copter::handle_command_ack(const mavlink_message_t* msg)
 {
     copter.command_ack_counter++;
     GCS_MAVLINK::handle_command_ack(msg);
 }
 
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 MAV_RESULT GCS_MAVLINK_Copter::_handle_command_preflight_calibration(const mavlink_command_long_t &packet)
 {
-    if (is_equal(packet.param6,1.0f)) {
+    if (is_equal(packet.param6,1.0f))
+    {
         // compassmot calibration
         return copter.mavlink_compassmot(chan);
     }
@@ -644,7 +782,13 @@ MAV_RESULT GCS_MAVLINK_Copter::_handle_command_preflight_calibration(const mavli
     return GCS_MAVLINK::_handle_command_preflight_calibration(packet);
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 MAV_RESULT GCS_MAVLINK_Copter::handle_command_int_packet(const mavlink_command_int_t &packet)
 {
     switch(packet.command) {
@@ -724,7 +868,13 @@ MAV_RESULT GCS_MAVLINK_Copter::handle_command_int_packet(const mavlink_command_i
     }
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 MAV_RESULT GCS_MAVLINK_Copter::handle_command_long_packet(const mavlink_command_long_t &packet)
 {
     switch(packet.command) {
@@ -1055,7 +1205,13 @@ MAV_RESULT GCS_MAVLINK_Copter::handle_command_long_packet(const mavlink_command_
     }
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
 {
     switch (msg->msgid) {
@@ -1168,7 +1324,8 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         float climb_rate_cms = 0.0f;
         if (is_equal(packet.thrust, 0.5f)) {
             climb_rate_cms = 0.0f;
-        } else if (packet.thrust > 0.5f) {
+        } else if (packet.thrust > 0.5f)
+        {
             // climb at up to WPNAV_SPEED_UP
             climb_rate_cms = (packet.thrust - 0.5f) * 2.0f * copter.wp_nav->get_speed_up();
         } else {
@@ -1560,6 +1717,14 @@ void Copter::gcs_update(void)
     gcs().update();
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
+*函数功能：更新数据（寻找输入命令在GCS链路上）
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：send RPM packet
+*************************************************************************************************************************/
 /*
   return true if we will accept this packet. Used to implement SYSID_ENFORCE
  */

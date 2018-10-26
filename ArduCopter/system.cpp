@@ -18,6 +18,14 @@ static void failsafe_check_static()
     copter.failsafe_check();
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void Copter::init_ardupilot()
+*函数功能：初始化
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void Copter::init_ardupilot()
 {
     // initialise serial port
@@ -123,7 +131,7 @@ void Copter::init_ardupilot()
 #if FRAME_CONFIG == HELI_FRAME
     input_manager.set_loop_rate(scheduler.get_loop_rate_hz());
 #endif
-
+    //初始化遥控器输入
     init_rc_in();               // sets up rc channels from radio
 
     // default frame class to match firmware if possible
@@ -248,7 +256,7 @@ void Copter::init_ardupilot()
 #endif
     DataFlash.setVehicle_Startup_Log_Writer(FUNCTOR_BIND(&copter, &Copter::Log_Write_Vehicle_Startup_Messages, void));
 
-    // initialise rc channels including setting mode
+    //初始化rc通道，包含设置模式-----initialise rc channels including setting mode
     rc().init();
 
     startup_INS_ground();
