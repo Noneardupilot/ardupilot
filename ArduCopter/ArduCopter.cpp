@@ -1,4 +1,26 @@
+/***********************************************************************************************************************
+*文件说明：应用文件头文件
+*文件功能：函数任务
+*修改日期：2018-9-7
+*修改作者：cihang_uav
+*备注信息： 编译代码：./waf configure --board fmuv5
+*备注信息： 下载代码：./waf --targets bin/arducopter --upload
+*备注信息： 更新子模块：git submodule update --init --recursive
+*备注信息： Code commit statistics can be found here: https://github.com/ArduPilot/ardupilot/graphs/contributors
+          Wiki: http://copter.ardupilot.org/
+          Requires modified version of Arduino, which can be found here: http://ardupilot.com/downloads/?category=6
+代码修改备注：
 
+          2018-10-14:增加日本手和美国手的切换
+          2018-10-15:修改实现植保AB点控制移植，其中采用八通道进行AB点打点操作，
+          2018-10-16:修改内八上锁，外八解锁
+          2018-10-18:仿真命令：sudo apt-get install build-essential---初始化编辑器
+                             cd ArduCopter
+                             ../Tools/autotest/sim_vehicle.py --console --map
+                             output add 192.168.159.1:14550
+          2018-10-26:增加美国手
+
+*************************************************************************************************************************/
 
 #include "Copter.h"
 
