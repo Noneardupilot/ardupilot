@@ -63,10 +63,10 @@ void Copter::init_rc_in()
 
 			    channel_throttle->set_range(1000);
 
-				hal.uartG->printf("rcmap.roll()=%d\r\n",rcmap.roll());
-				hal.uartG->printf("rcmap.throttle()=%d\r\n",rcmap.throttle());
-				hal.uartG->printf("rcmap.pitch()=%d\r\n",rcmap.pitch());
-				hal.uartG->printf("rcmap.yaw()=%d\r\n",rcmap.yaw());
+//				hal.uartG->printf("rcmap.roll()=%d\r\n",rcmap.roll());
+//				hal.uartG->printf("rcmap.throttle()=%d\r\n",rcmap.throttle());
+//				hal.uartG->printf("rcmap.pitch()=%d\r\n",rcmap.pitch());
+//				hal.uartG->printf("rcmap.yaw()=%d\r\n",rcmap.yaw());
 		   }
 		   else
 		   {

@@ -184,6 +184,11 @@
 #endif
 
 
+//#include <AC_UKF/AC_UKF.h>
+
+
+
+
 class Copter : public AP_HAL::HAL::Callbacks {
 public:
     friend class GCS_MAVLINK_Copter;
@@ -263,7 +268,7 @@ private:
     NavEKF2 EKF2{&ahrs, rangefinder};
     NavEKF3 EKF3{&ahrs, rangefinder};
     AP_AHRS_NavEKF ahrs{EKF2, EKF3, AP_AHRS_NavEKF::FLAG_ALWAYS_USE_EKF};
-
+//    AC_UKF ukf{&ahrs, barometer, MAIN_LOOP_SECONDS*2.0f};
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     SITL::SITL sitl;
 #endif
@@ -683,6 +688,10 @@ private:
     void rotate_body_frame_to_NE(float &x, float &y);
     uint16_t get_pilot_speed_dn();
 
+
+
+
+
 #if ADSB_ENABLED == ENABLED
     // avoidance_adsb.cpp
     void avoidance_adsb_update(void);
@@ -716,6 +725,10 @@ private:
     void failsafe_ekf_event();
     void failsafe_ekf_off_event(void);
     void check_ekf_reset();
+
+    //UKF
+
+    void update_ukf();
 
     // esc_calibration.cpp
     void esc_calibration_startup_check();

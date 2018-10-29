@@ -259,6 +259,9 @@ void set_fast_reboot(enum rtc_boot_magic v)
   enable peripheral power if needed This is done late to prevent
   problems with CTS causing SiK radios to stay in the bootloader. A
   SiK radio will stay in the bootloader if CTS is held to GND on boot
+  如果需要，可以启用外围电源，这是为了防止
+  CTS导致SIK收音机留在引导加载程序中的问题。一
+  如果CTS在启动时被保存到GND，SIK电台将留在引导加载程序中。
 */
 void peripheral_power_enable(void)
 {

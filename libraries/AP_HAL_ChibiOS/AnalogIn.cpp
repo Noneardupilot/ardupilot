@@ -327,6 +327,10 @@ void AnalogIn::_timer_tick(void)
 #endif
 }
 
+
+
+
+
 AP_HAL::AnalogSource* AnalogIn::channel(int16_t pin) 
 {
     for (uint8_t j=0; j<ANALOG_MAX_CHANNELS; j++) {

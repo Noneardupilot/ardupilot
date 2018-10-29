@@ -239,10 +239,14 @@ static void string_substitute(const char *str, char *str2)
     *p = 0;
 }
 
+/***********************************************************************************************************************
+*函数原型：static void setup_usb_string(USBDescriptor *desc, const char *str, uint8_t *b)
+*函数功能：动态分配USB描述符字符串
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：dynamically allocate a USB descriptor string
+*************************************************************************************************************************/
 
-/*
-  dynamically allocate a USB descriptor string
- */
 static void setup_usb_string(USBDescriptor *desc, const char *str, uint8_t *b)
 {
     char str2[USB_DESC_MAX_STRLEN];
@@ -253,22 +257,39 @@ static void setup_usb_string(USBDescriptor *desc, const char *str, uint8_t *b)
     b[0] = USB_DESC_BYTE(desc->ud_size);
     b[1] = USB_DESC_BYTE(USB_DESCRIPTOR_STRING);
     uint8_t i;
-    for (i=0; i<len; i++) {
+    for (i=0; i<len; i++)
+    {
         b[2+i*2] = str2[i];
         b[2+i*2+1] = 0;
     }
 }
 
-/*
-  dynamically allocate a USB descriptor strings
- */
+
+
+/***********************************************************************************************************************
+*函数原型：void setup_usb_strings(void)
+*函数功能：动态分配USB描述符字符串
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：dynamically allocate a USB descriptor strings
+*************************************************************************************************************************/
+
 void setup_usb_strings(void)
 {
-    setup_usb_string(&vcom_strings[1], HAL_USB_STRING_MANUFACTURER, vcom_buffers[0]);
-    setup_usb_string(&vcom_strings[2], HAL_USB_STRING_PRODUCT, vcom_buffers[1]);
-    setup_usb_string(&vcom_strings[3], HAL_USB_STRING_SERIAL, vcom_buffers[2]);
+    setup_usb_string(&vcom_strings[1], HAL_USB_STRING_MANUFACTURER, vcom_buffers[0]); //"ArduPilot"
+    setup_usb_string(&vcom_strings[2], HAL_USB_STRING_PRODUCT, vcom_buffers[1]);      //"%BOARD%"
+    setup_usb_string(&vcom_strings[3], HAL_USB_STRING_SERIAL, vcom_buffers[2]);       //"%SERIAL%"
 }
 
+
+
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
  * Handles the GET_DESCRIPTOR callback. All required descriptors must be
  * handled here.

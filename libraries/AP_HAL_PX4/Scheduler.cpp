@@ -174,16 +174,20 @@ void PX4Scheduler::register_timer_process(AP_HAL::MemberProc proc)
 
 void PX4Scheduler::register_io_process(AP_HAL::MemberProc proc)
 {
-    for (uint8_t i = 0; i < _num_io_procs; i++) {
-        if (_io_proc[i] == proc) {
+    for (uint8_t i = 0; i < _num_io_procs; i++)
+    {
+        if (_io_proc[i] == proc)
+        {
             return;
         }
     }
 
-    if (_num_io_procs < PX4_SCHEDULER_MAX_TIMER_PROCS) {
+    if (_num_io_procs < PX4_SCHEDULER_MAX_TIMER_PROCS)
+    {
         _io_proc[_num_io_procs] = proc;
         _num_io_procs++;
-    } else {
+    } else
+    {
         hal.console->printf("Out of IO processes\n");
     }
 }
@@ -269,7 +273,8 @@ void *PX4Scheduler::_timer_thread(void *arg)
 
 void PX4Scheduler::_run_io(void)
 {
-    if (_in_io_proc) {
+    if (_in_io_proc)
+    {
         return;
     }
     _in_io_proc = true;

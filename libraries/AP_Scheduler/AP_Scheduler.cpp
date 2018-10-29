@@ -230,49 +230,89 @@ float AP_Scheduler::load_average()
     return used_time / (float)loop_us;
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void AP_Scheduler::loop()
+*函数功能：核心循环函数
+*修改日期：2018-10-16
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_Scheduler::loop()
 {
-    // wait for an INS sample
-    AP::ins().wait_for_sample();
+	//等待INS数据采集完毕-------------------------wait for an INS sample
+	    AP::ins().wait_for_sample();
 
-    const uint32_t sample_time_us = AP_HAL::micros();
-    
-    if (_loop_timer_start_us == 0) {
-        _loop_timer_start_us = sample_time_us;
-        _last_loop_time_s = get_loop_period_s();
-    } else {
-        _last_loop_time_s = (sample_time_us - _loop_timer_start_us) * 1.0e-6;
-    }
+	    //获取系统采样时间
+	    const uint32_t sample_time_us = AP_HAL::micros();
 
-    // Execute the fast loop
-    // ---------------------
-    if (_fastloop_fn) {
-        _fastloop_fn();
-    }
+	    //开始时间等于0?
+	    if (_loop_timer_start_us == 0)
+	    {
+	        _loop_timer_start_us = sample_time_us;
+	        _last_loop_time_s = get_loop_period_s();
+	    } else
+	    {
+	        _last_loop_time_s = (sample_time_us - _loop_timer_start_us) * 1.0e-6; //得到执行整个loop函数的时间
+	    }
 
-    // tell the scheduler one tick has passed
-    tick();
+	    //执行快速循环函数----Execute the fast loop
+	    // ---------------------
+	    if (_fastloop_fn)
+	    {
+	    	// hal.uartG->printf("_fastloop_fn=%d\r\n",_fastloop_fn); //loop_us=2500,这个单位是us
+	    	// hal.uartG->printf("MMM\r\n"); //loop_us=2500,这个单位是us
+	        _fastloop_fn(); //该函数会通过指针函数知识，调用fast_loop()函数
+	       // hal.uartG->printf("NNN\r\n"); //loop_us=2500,这个单位是us
+	    }
 
-    // run all the tasks that are due to run. Note that we only
-    // have to call this once per loop, as the tasks are scheduled
-    // in multiples of the main loop tick. So if they don't run on
-    // the first call to the scheduler they won't run on a later
-    // call until scheduler.tick() is called again
-    const uint32_t loop_us = get_loop_period_us();
-    const uint32_t time_available = (sample_time_us + loop_us) - AP_HAL::micros();
-    run(time_available > loop_us ? 0u : time_available);
+	    //高速度调度器，一个任务节拍已经执行------tell the scheduler one tick has passed
+	    tick();
+	    //运行所有要运行的任务。注意我们只是必须按每个循环调用一次，因为任务是按计划进行的，并且每个任务是主循环的倍数。
+	    //所以如果在第一次运行主循环时，任务表中的任务有不运行的任务.将等待下一次任务调度运行到来，才有可能会被运行。
+	    //这里我举个例子：主任务时间2.5ms，其中一个数组表任务时间是10ms，那么需要运行四次loop才可能运行数组表中的任务，前三次就是上面说的情况
+	    // run all the tasks that are due to run. Note that we only
+	    // have to call this once per loop, as the tasks are scheduled
+	    // in multiples of the main loop tick. So if they don't run on
+	    // the first call to the scheduler they won't run on a later
+	    // call until scheduler.tick() is called again
+	    const uint32_t loop_us = get_loop_period_us();  //这个是主循环时间，400HZ，
+	    //这里增加串口打印函数，
+	 //   hal.uartG->printf("loop_us=%d\r\n",loop_us); //loop_us=2500,这个单位是us
 
-#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
-    // move result of AP_HAL::micros() forward:
-    hal.scheduler->delay_microseconds(1);
-#endif
+	    //获取执行完fast_loop()函数后，剩余多少时间给数组表任务使用=开始+2.5ms-运行完上面fast_loop（）到这的时间，获得剩余时间，主要给数组表任务使用
+	    const uint32_t time_available = (sample_time_us + loop_us) - AP_HAL::micros();
+	    //打印出剩余时间
+	  //  hal.uartG->printf("time_available=%d\r\n",time_available); //time_available=2212..
 
-    // check loop time
-    perf_info.check_loop_time(sample_time_us - _loop_timer_start_us);
-        
-    _loop_timer_start_us = sample_time_us;
+
+	    //运行run（）函数，运行数组表任务
+	    run(time_available > loop_us ? 0u : time_available); //运行函数，上面计算剩余的时间都留给任务表中的任务去用。
+
+	#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
+	    // move result of AP_HAL::micros() forward:
+	    hal.scheduler->delay_microseconds(1);
+	#endif
+
+	    //检查loop时间-----check loop time
+	    perf_info.check_loop_time(sample_time_us - _loop_timer_start_us);
+
+	    //重新赋值loop起始时间，下次计算loop运行时间使用
+	    _loop_timer_start_us = sample_time_us;
+
 }
 
+
+
+
+
+/***********************************************************************************************************************
+*函数原型：void AP_Scheduler::loop()
+*函数功能：核心循环函数
+*修改日期：2018-10-16
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_Scheduler::update_logging()
 {
     if (debug_flags()) {

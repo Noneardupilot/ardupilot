@@ -131,7 +131,8 @@ void AP_ToneAlarm::play_tone(const uint8_t tone_index)
 
 void AP_ToneAlarm::_timer_task()
 {
-    if (_sem && _sem->take(HAL_SEMAPHORE_BLOCK_FOREVER)) {
+    if (_sem && _sem->take(HAL_SEMAPHORE_BLOCK_FOREVER))
+    {
         _mml_player.update();
         _sem->give();
     }

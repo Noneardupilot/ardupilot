@@ -18,7 +18,7 @@
                              cd ArduCopter
                              ../Tools/autotest/sim_vehicle.py --console --map
                              output add 192.168.159.1:14550
-          2018-10-26:增加美国手
+          2018-10-26:增加美国手，日本手解锁
 
 *************************************************************************************************************************/
 
@@ -75,6 +75,9 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] =
     SCHED_TASK(three_hz_loop,          3,     75),
     SCHED_TASK_CLASS(AP_ServoRelayEvents,  &copter.ServoRelayEvents,      update_events, 50,     75),
     SCHED_TASK_CLASS(AP_Baro,              &copter.barometer,           accumulate,      50,  90),
+
+//	SCHED_TASK(update_ukf,           200,     200), //ukf运算
+
 #if PRECISION_LANDING == ENABLED
     SCHED_TASK(update_precland,      400,     50),
 #endif
@@ -589,6 +592,22 @@ void Copter::publish_osd_info()
     osd.set_nav_info(nav_info);
 }
 #endif
+
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
+
+void Copter::update_ukf(void)
+{
+	//ukf.update();
+}
+
+
+
 
 AP_HAL_MAIN_CALLBACKS(&copter);
 
