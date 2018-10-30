@@ -113,38 +113,54 @@ void AP_Scheduler::tick(void)
     _tick_counter++;
 }
 
-/*
-  run one tick
-  this will run as many scheduler tasks as we can in the specified time
- */
+
+
+
 void AP_Scheduler::run(uint32_t time_available)
 {
-    uint32_t run_started_usec = AP_HAL::micros();
-    uint32_t now = run_started_usec;
-
-    if (_debug > 1 && _perf_counters == nullptr) {
+//	hal.uartG->printf("AP_Scheduler Run\r\n");
+    uint32_t run_started_usec = AP_HAL::micros();   //运行开始时间
+    uint32_t now = run_started_usec;                //记录这个值，开始运行时间
+   //调试
+    if (_debug > 1 && _perf_counters == nullptr)
+    {
         _perf_counters = new AP_HAL::Util::perf_counter_t[_num_tasks];
-        if (_perf_counters != nullptr) {
-            for (uint8_t i=0; i<_num_tasks; i++) {
-                _perf_counters[i] = hal.util->perf_alloc(AP_HAL::Util::PC_ELAPSED, _tasks[i].name);
+        if (_perf_counters != nullptr)
+        {
+            for (uint8_t i=0; i<_num_tasks; i++)
+            {
+                _perf_counters[i] = hal.util->perf_alloc(AP_HAL::Util::PC_ELAPSED, _tasks[i].name); //性能计数
             }
         }
     }
-    
-    for (uint8_t i=0; i<_num_tasks; i++) {
-        uint16_t dt = _tick_counter - _last_run[i];
-        uint16_t interval_ticks = _loop_rate_hz / _tasks[i].rate_hz;
-        if (interval_ticks < 1) {
+    //通过for循环，在允许的时间范围内，尽可能的多执行任务表中的任务，这里举个例子，假如我们还剩1.5ms的时间给剩余的任务表使用；
+    for (uint8_t i=0; i<_num_tasks; i++)
+    {
+
+    	hal.uartG->printf("i=%d\r\n",i); //
+
+        uint16_t dt = _tick_counter - _last_run[i]; //_last_run[i]:执行一个loop，记录的任务表中每个任务被被执行的次数,因此dt表示上次运行的那个任务到现在这里的圈数
+     //   hal.uartG->printf("_tick_counter=%d\r\n",_tick_counter); //time_available=2212..
+      //  hal.uartG->printf("_last_run[i]=%d\r\n",_last_run[i]); //time_available=2212..
+
+
+        //_loop_rate_hz 是循环的频率，这里是400Hz，_tasks[i].rate_hz是任务表中的某个任务的频率，假如是20Hz，那么interval_ticks =20，
+        //那就应该是运行了20圈后,执行该任务。
+        uint16_t interval_ticks = _loop_rate_hz / _tasks[i].rate_hz; //这个值表示执行某个任务需要的圈数
+        if (interval_ticks < 1) //如果这个值小于1，就默认是1，一般小于很少
+        {
             interval_ticks = 1;
         }
-        if (dt < interval_ticks) {
-            // this task is not yet scheduled to run again
+        if (dt < interval_ticks) //如果dt<interval_ticks将会结束继续允许该任务
+        {
+            //这个任务不会在被运行------- this task is not yet scheduled to run again
             continue;
         }
         // this task is due to run. Do we have enough time to run it?
         _task_time_allowed = _tasks[i].max_time_micros;
 
-        if (dt >= interval_ticks*2) {
+        if (dt >= interval_ticks*2)
+        {
             // we've slipped a whole run of this task!
             debug(2, "Scheduler slip task[%u-%s] (%u/%u/%u)\n",
                   (unsigned)i,
@@ -153,8 +169,9 @@ void AP_Scheduler::run(uint32_t time_available)
                   (unsigned)interval_ticks,
                   (unsigned)_task_time_allowed);
         }
-
-        if (_task_time_allowed > time_available) {
+        //这个时间太大是不行，不会运行
+        if (_task_time_allowed > time_available)
+        {
             // not enough time to run this task.  Continue loop -
             // maybe another task will fit into time remaining
             continue;
@@ -163,11 +180,16 @@ void AP_Scheduler::run(uint32_t time_available)
         // run it
         _task_time_started = now;
         current_task = i;
-        if (_debug > 1 && _perf_counters && _perf_counters[i]) {
+        if (_debug > 1 && _perf_counters && _perf_counters[i])
+        {
             hal.util->perf_begin(_perf_counters[i]);
         }
+      //  hal.uartG->printf("BBB\r\n"); //time_available=2212..
+        //运行任务函数
         _tasks[i].function();
-        if (_debug > 1 && _perf_counters && _perf_counters[i]) {
+      //  hal.uartG->printf("BBB12\r\n"); //time_available=2212..
+        if (_debug > 1 && _perf_counters && _perf_counters[i])
+        {
             hal.util->perf_end(_perf_counters[i]);
         }
         current_task = -1;
@@ -180,7 +202,8 @@ void AP_Scheduler::run(uint32_t time_available)
         now = AP_HAL::micros();
         uint32_t time_taken = now - _task_time_started;
 
-        if (time_taken > _task_time_allowed) {
+        if (time_taken > _task_time_allowed)
+        {
             // the event overran!
             debug(3, "Scheduler overrun task[%u-%s] (%u/%u)\n",
                   (unsigned)i,
@@ -188,7 +211,8 @@ void AP_Scheduler::run(uint32_t time_available)
                   (unsigned)time_taken,
                   (unsigned)_task_time_allowed);
         }
-        if (time_taken >= time_available) {
+        if (time_taken >= time_available)
+        {
             time_available = 0;
             break;
         }
@@ -199,11 +223,104 @@ void AP_Scheduler::run(uint32_t time_available)
     _spare_micros += time_available;
 
     _spare_ticks++;
-    if (_spare_ticks == 32) {
+    if (_spare_ticks == 32)
+    {
         _spare_ticks /= 2;
         _spare_micros /= 2;
     }
 }
+
+///*
+//  run one tick
+//  this will run as many scheduler tasks as we can in the specified time
+// */
+//void AP_Scheduler::run(uint32_t time_available)
+//{
+//    uint32_t run_started_usec = AP_HAL::micros();
+//    uint32_t now = run_started_usec;
+//
+//    if (_debug > 1 && _perf_counters == nullptr) {
+//        _perf_counters = new AP_HAL::Util::perf_counter_t[_num_tasks];
+//        if (_perf_counters != nullptr) {
+//            for (uint8_t i=0; i<_num_tasks; i++) {
+//                _perf_counters[i] = hal.util->perf_alloc(AP_HAL::Util::PC_ELAPSED, _tasks[i].name);
+//            }
+//        }
+//    }
+//
+//    for (uint8_t i=0; i<_num_tasks; i++) {
+//        uint16_t dt = _tick_counter - _last_run[i];
+//        uint16_t interval_ticks = _loop_rate_hz / _tasks[i].rate_hz;
+//        if (interval_ticks < 1) {
+//            interval_ticks = 1;
+//        }
+//        if (dt < interval_ticks) {
+//            // this task is not yet scheduled to run again
+//            continue;
+//        }
+//        // this task is due to run. Do we have enough time to run it?
+//        _task_time_allowed = _tasks[i].max_time_micros;
+//
+//        if (dt >= interval_ticks*2) {
+//            // we've slipped a whole run of this task!
+//            debug(2, "Scheduler slip task[%u-%s] (%u/%u/%u)\n",
+//                  (unsigned)i,
+//                  _tasks[i].name,
+//                  (unsigned)dt,
+//                  (unsigned)interval_ticks,
+//                  (unsigned)_task_time_allowed);
+//        }
+//
+//        if (_task_time_allowed > time_available) {
+//            // not enough time to run this task.  Continue loop -
+//            // maybe another task will fit into time remaining
+//            continue;
+//        }
+//
+//        // run it
+//        _task_time_started = now;
+//        current_task = i;
+//        if (_debug > 1 && _perf_counters && _perf_counters[i]) {
+//            hal.util->perf_begin(_perf_counters[i]);
+//        }
+//        _tasks[i].function();
+//        if (_debug > 1 && _perf_counters && _perf_counters[i]) {
+//            hal.util->perf_end(_perf_counters[i]);
+//        }
+//        current_task = -1;
+//
+//        // record the tick counter when we ran. This drives
+//        // when we next run the event
+//        _last_run[i] = _tick_counter;
+//
+//        // work out how long the event actually took
+//        now = AP_HAL::micros();
+//        uint32_t time_taken = now - _task_time_started;
+//
+//        if (time_taken > _task_time_allowed) {
+//            // the event overran!
+//            debug(3, "Scheduler overrun task[%u-%s] (%u/%u)\n",
+//                  (unsigned)i,
+//                  _tasks[i].name,
+//                  (unsigned)time_taken,
+//                  (unsigned)_task_time_allowed);
+//        }
+//        if (time_taken >= time_available) {
+//            time_available = 0;
+//            break;
+//        }
+//        time_available -= time_taken;
+//    }
+//
+//    // update number of spare microseconds
+//    _spare_micros += time_available;
+//
+//    _spare_ticks++;
+//    if (_spare_ticks == 32) {
+//        _spare_ticks /= 2;
+//        _spare_micros /= 2;
+//    }
+//}
 
 /*
   return number of micros until the current task reaches its deadline

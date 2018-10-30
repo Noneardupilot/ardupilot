@@ -774,16 +774,22 @@ void RCOutput::trigger_groups(void)
     chMtxUnlock(&trigger_mutex);
 }
 
-/*
-  periodic timer. This is used for oneshot and dshot modes, plus for
-  safety switch update
- */
+
+
+/************************************************************************************************************************************
+*函数原型：void RCOutput::timer_tick(void)
+*函数功能：周期定时器----这是用于单机模式和dshop模式(DSHOT是无人机里边,一种新型的驱动电调(ESC,无刷直流电机电子调速器)的方式)，加上安全开关更新。
+*修改日期：2018-10-29
+*备   注： periodic timer. This is used for oneshot and dshot modes, plus for safety switch update
+*************************************************************************************************************************************/
+
 void RCOutput::timer_tick(void)
 {
-    safety_update();
+    safety_update(); //更新安全状态
     
     uint64_t now = AP_HAL::micros64();
-    for (uint8_t i = 0; i < NUM_GROUPS; i++ ) {
+    for (uint8_t i = 0; i < NUM_GROUPS; i++ )
+    {
         pwm_group &group = pwm_group_list[i];
         if (!serial_group &&
             group.current_mode >= MODE_PWM_DSHOT150 &&
@@ -793,19 +799,24 @@ void RCOutput::timer_tick(void)
             // above 1000 Hz. This makes the protocol more reliable on
             // long cables, and also keeps some ESCs happy that don't
             // like low rates
+        	//现在做一个阻塞发送，保证DShot发送在1000赫兹以上。这使得协议在长电缆上更加可靠，同时也保持一些不喜欢低利率的ESC高兴。
             dshot_send(group, true);
         }
     }
     if (min_pulse_trigger_us == 0 ||
-        serial_group != nullptr) {
+        serial_group != nullptr)
+    {
         return;
     }
     if (now > min_pulse_trigger_us &&
-        now - min_pulse_trigger_us > 4000) {
-        // trigger at a minimum of 250Hz
+        now - min_pulse_trigger_us > 4000)
+    {
+        //最小250Hz触发器--- trigger at a minimum of 250Hz
         trigger_groups();
     }
 }
+
+
 
 /*
   allocate DMA channel
@@ -1407,13 +1418,19 @@ void RCOutput::set_safety_pwm(uint32_t chmask, uint16_t period_us)
     }
 }
 
-/*
-  update safety state
- */
+
+/************************************************************************************************************************************
+*函数原型：void RCOutput::safety_update(void
+*函数功能：更新安全状态
+*修改日期：2018-10-29
+*备   注：  update safety state
+*************************************************************************************************************************************/
+
 void RCOutput::safety_update(void)
 {
     uint32_t now = AP_HAL::millis();
-    if (now - safety_update_ms < 100) {
+    if (now - safety_update_ms < 100)
+    {
         // update safety at 10Hz
         return;
     }
@@ -1469,6 +1486,9 @@ void RCOutput::safety_update(void)
     palWriteLine(HAL_GPIO_PIN_LED_SAFETY, (led_pattern & (1U << led_counter))?0:1);
 #endif
 }
+
+
+
 
 /*
   set PWM to send to a set of channels if the FMU firmware dies

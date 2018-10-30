@@ -111,23 +111,36 @@ uint8_t RCInput::read(uint16_t* periods, uint8_t len)
     return len;
 }
 
+
+
+/************************************************************************************************************************************
+*函数原型：void RCInput::_timer_tick(void)
+*函数功能：
+*修改日期：2018-10-29
+*备   注：
+*************************************************************************************************************************************/
+
 void RCInput::_timer_tick(void)
 {
-    if (!_init) {
+    if (!_init)
+    {
         return;
     }
 #if HAL_USE_ICU == TRUE || HAL_USE_EICU == TRUE
     uint32_t width_s0, width_s1;
 
-    while(sig_reader.read(width_s0, width_s1)) {
+    while(sig_reader.read(width_s0, width_s1))
+    {
         rcin_prot.process_pulse(width_s0, width_s1);
     }
 
-    if (rcin_prot.new_input()) {
+    if (rcin_prot.new_input())
+    {
         rcin_mutex.take(HAL_SEMAPHORE_BLOCK_FOREVER);
         _rcin_timestamp_last_signal = AP_HAL::micros();
         _num_channels = rcin_prot.num_channels();
-        for (uint8_t i=0; i<_num_channels; i++) {
+        for (uint8_t i=0; i<_num_channels; i++)
+        {
             _rc_values[i] = rcin_prot.read(i);
         }
         rcin_mutex.give();
@@ -135,7 +148,8 @@ void RCInput::_timer_tick(void)
 #endif
 
 #if HAL_RCINPUT_WITH_AP_RADIO
-    if (radio && radio->last_recv_us() != last_radio_us) {
+    if (radio && radio->last_recv_us() != last_radio_us)
+    {
         last_radio_us = radio->last_recv_us();
         rcin_mutex.take(HAL_SEMAPHORE_BLOCK_FOREVER);
         _rcin_timestamp_last_signal = last_radio_us;
@@ -155,11 +169,13 @@ void RCInput::_timer_tick(void)
     }
     rcin_mutex.give();
 #endif
-    
-
+    //注意，我们依赖于模型代码检查有没有新数据输入，以及最后一个有效输入以处理故障安全的超时
     // note, we rely on the vehicle code checking new_input()
     // and a timeout for the last valid input to handle failsafe
 }
+
+
+
 
 /*
   start a bind operation, if supported

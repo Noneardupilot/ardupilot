@@ -56,9 +56,16 @@ static memory_heap_t dma_reserve_heap;
 
 static void *malloc_dtcm(size_t size);
 
-/*
-  initialise memory handling
- */
+
+
+/***********************************************************************************************************************
+*函数原型：void malloc_init(void)
+*函数功能：初始化内存处理
+*修改日期：2018-10-30
+*修改作者：cihang_uav
+*备注信息：初始化内存处理-----initialise memory handling
+*************************************************************************************************************************/
+
 void malloc_init(void)
 {
 #if defined(CCM_RAM_SIZE_KB)
@@ -81,6 +88,15 @@ void malloc_init(void)
     chHeapObjectInit(&dma_reserve_heap, dma_reserve, DMA_RESERVE_SIZE);
 #endif //#if DMA_RESERVE_SIZE != 0
 }
+
+
+/***********************************************************************************************************************
+*函数原型：void malloc_init(void)
+*函数功能：初始化内存处理
+*修改日期：2018-10-30
+*修改作者：cihang_uav
+*备注信息：初始化内存处理-----initialise memory handling
+*************************************************************************************************************************/
 
 void *malloc_ccm(size_t size)
 {

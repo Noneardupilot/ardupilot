@@ -28,76 +28,78 @@ static void failsafe_check_static()
 *************************************************************************************************************************/
 void Copter::init_ardupilot()
 {
-    // initialise serial port
+    //初始化usb，设置波特率115200------initialise serial port
     serial_manager.init_console();
 
-    // init vehicle capabilties
+    //初始化设备整体功能------------init vehicle capabilties
     init_capabilities();
 
+    //打印初始化
     hal.console->printf("\n\nInit %s"
                         "\n\nFree RAM: %u\n",
                         AP::fwversion().fw_string,
                         (unsigned)hal.util->available_memory());
 
-    //
+    //在控制台上报告固件版本代码（实际的EEPROM格式版本检查在Load参数参数函数中完成）
     // Report firmware version code expect on console (check of actual EEPROM format version is done in load_parameters function)
     //
     report_version();
 
-    // load parameters from EEPROM
+    //从EEPROM加载参数--------------------load parameters from EEPROM
     load_parameters();
 
-    // time per loop - this gets updated in the main loop() based on
-    // actual loop rate
+    // 循环时间。主循环更新的时间速率---------time per loop - this gets updated in the main loop() based on actual loop rate
     G_Dt = 1.0 / scheduler.get_loop_rate_hz();
 
 #if STATS_ENABLED == ENABLED
-    // initialise stats module
+    //初始化状态数据模块，主要是g2参数--------initialise stats module
     g2.stats.init();
 #endif
-
+    //设置DataFlash,记录log
     gcs().set_dataflash(&DataFlash);
 
-    // identify ourselves correctly with the ground station
+    //正确识别地面站---------------------- identify ourselves correctly with the ground station
     mavlink_system.sysid = g.sysid_this_mav;
     
-    // initialise serial ports
+    //初始化所有串口---------------------- initialise serial ports
     serial_manager.init();
 
-    // setup first port early to allow BoardConfig to report errors
+    //设置第一端口（usb）以允许BoardConfig报告错误--- setup first port early to allow BoardConfig to report errors
     gcs().chan(0).setup_uart(serial_manager, AP_SerialManager::SerialProtocol_MAVLink, 0);
 
 
     // Register mavlink_delay_cb, which will run anytime you have
     // more than 5ms remaining in your call to hal.scheduler->delay
+    //注册mavlink_delay_cb（）回调函数，将允许任何时候允许，超过5ms时间将调用延迟
     hal.scheduler->register_delay_callback(mavlink_delay_cb_static, 5);
     
+    //板层初始化，包含gpio,rc,pwm,sbus等
     BoardConfig.init();
 #if HAL_WITH_UAVCAN
-    BoardConfig_CAN.init();
+    BoardConfig_CAN.init(); //can
 #endif
 
-    // init cargo gripper
+    //夹子初始化-----init cargo gripper
 #if GRIPPER_ENABLED == ENABLED
     g2.gripper.init();
 #endif
 
-    // init winch and wheel encoder
+    //绞车和轮编码器---- init winch and wheel encoder
     winch_init();
 
-    // initialise notify system
+    //初始化通知系统，主要led,beep------ initialise notify system
     notify.init();
     notify_flight_mode();
 
-    // initialise battery monitor
+    //初始化电池监控器----- initialise battery monitor
     battery.init();
 
-    // Init RSSI
+    //初始化RSSI---- Init RSSI
     rssi.init();
     
     barometer.init();
 
-    // setup telem slots with serial ports
+    //设置TELM插槽为串行端口-----setup telem slots with serial ports
     gcs().setup_uarts(serial_manager);
 
 #if FRSKY_TELEM_ENABLED == ENABLED
@@ -134,16 +136,16 @@ void Copter::init_ardupilot()
     //初始化遥控器输入
     init_rc_in();               // sets up rc channels from radio
 
-    // default frame class to match firmware if possible
+    //如果可能的话，默认框架类与固件匹配----- default frame class to match firmware if possible
     set_default_frame_class();
 
-    // allocate the motors class
+    //配置电机类,分配电机----- allocate the motors class
     allocate_motors();
 
-    // sets up motors and output to escs
+    //设置电机并输出到ESCS---- sets up motors and output to escs
     init_rc_out();
 
-    // motors initialised so parameters can be sent
+    //电机初始化，所以可以发送参数------ motors initialised so parameters can be sent
     ap.initialised_params = true;
 
     relay.init();
@@ -152,6 +154,7 @@ void Copter::init_ardupilot()
      *  setup the 'main loop is dead' check. Note that this relies on
      *  the RC library being initialised.
      */
+    //设置“主循环是死的”检查。请注意，这依赖于RC库正在初始化。
     hal.scheduler->register_timer_failsafe(failsafe_check_static, 1000);
 
 #if BEACON_ENABLED == ENABLED
@@ -159,18 +162,19 @@ void Copter::init_ardupilot()
     ahrs.set_beacon(&g2.beacon);
 #endif
 
-    // Do GPS init
+    //GPS初始化----Do GPS init
     gps.set_log_gps_bit(MASK_LOG_GPS);
     gps.init(serial_manager);
-
+    //罗盘使能
     init_compass();
 
+    //光流使能
 #if OPTFLOW == ENABLED
     // make optflow available to AHRS
     ahrs.set_optflow(&optflow);
 #endif
 
-    // init Location class
+    //初始化位置类----init Location class
 #if AP_TERRAIN_AVAILABLE && AC_TERRAIN
     Location_Class::set_terrain(&terrain);
     wp_nav->set_terrain(&terrain);
@@ -182,22 +186,23 @@ void Copter::init_ardupilot()
 #endif
 
     attitude_control->parameter_sanity_check();
+    //设置位置控制时间
     pos_control->set_dt(scheduler.get_loop_period_s());
 
-    // init the optical flow sensor
+    //初始化光流------init the optical flow sensor
     init_optflow();
 
 #if MOUNT == ENABLED
-    // initialise camera mount
+    //初始化摄像机挂载---- initialise camera mount
     camera_mount.init(serial_manager);
 #endif
 
 #if PRECISION_LANDING == ENABLED
-    // initialise precision landing
+    //初始化精确着陆---- initialise precision landing
     init_precland();
 #endif
 
-    // initialise landing gear position
+    //起落架位置初始化----- initialise landing gear position
     landinggear.init();
 
 #ifdef USERHOOK_INIT
@@ -216,88 +221,95 @@ void Copter::init_ardupilot()
     ins.set_hil_mode();
 #endif
 
-    // read Baro pressure at ground
+    //在地面读出气压--- read Baro pressure at ground
     //-----------------------------
     barometer.set_log_baro_bit(MASK_LOG_IMU);
-    barometer.calibrate();
+    barometer.calibrate(); //气压计校准
 
-    // initialise rangefinder
+    //初始化测距仪-----------initialise rangefinder
     init_rangefinder();
 
-    // init proximity sensor
+    //初始化近距离传感器-------init proximity sensor
     init_proximity();
 
 #if BEACON_ENABLED == ENABLED
-    // init beacons used for non-gps position estimation
+    //初始化非GPS位置估计----- init beacons used for non-gps position estimation
     g2.beacon.init();
 #endif
 
-    // init visual odometry
+    //初始化视觉测距法------- init visual odometry
     init_visual_odom();
 
 #if RPM_ENABLED == ENABLED
-    // initialise AP_RPM library
+    //初始化AP_RPM库------ initialise AP_RPM library
     rpm_sensor.init();
 #endif
 
 #if MODE_AUTO_ENABLED == ENABLED
-    // initialise mission library
+    //初始化任务库---- initialise mission library
     mission.init();
 #endif
 
 #if MODE_SMARTRTL_ENABLED == ENABLED
-    // initialize SmartRTL
+    //初始化智能返航----------initialize SmartRTL
     g2.smart_rtl.init();
 #endif
 
-    // initialise DataFlash library
+    //初始化Dataflash库------initialise DataFlash library
 #if MODE_AUTO_ENABLED == ENABLED
     DataFlash.set_mission(&mission);
 #endif
+
+    //初始化设备log
     DataFlash.setVehicle_Startup_Log_Writer(FUNCTOR_BIND(&copter, &Copter::Log_Write_Vehicle_Startup_Messages, void));
 
     //初始化rc通道，包含设置模式-----initialise rc channels including setting mode
     rc().init();
 
+    //初始化惯性传感器
     startup_INS_ground();
 
-    // set landed flags
+    //设置着陆--------标志set landed flags
     set_land_complete(true);
     set_land_complete_maybe(true);
 
     // we don't want writes to the serial port to cause us to pause
     // mid-flight, so set the serial ports non-blocking once we are
     // ready to fly
+    //我们不希望写入串行端口使我们中途暂停，所以设置串行端口非阻塞，一旦我们准备飞行
     serial_manager.set_blocking_writes_all(false);
 
-    // enable CPU failsafe
+    //启用CPU故障安全----- enable CPU failsafe
     failsafe_enable();
 
     ins.set_log_raw_bit(MASK_LOG_IMU_RAW);
 
-    // enable output to motors
-    if (arming.rc_calibration_checks(true)) {
+    //启用电机输出------------ enable output to motors
+    if (arming.rc_calibration_checks(true))
+    {
         enable_motor_output();
     }
 
-    // disable safety if requested
+    //如果请求不使能安全开关------ disable safety if requested
     BoardConfig.init_safety();
 
-//    ukf.init();
-
-
+    //终端打印可以飞行
     hal.console->printf("\nReady to FLY ");
 
-    // flag that initialisation has completed
+    //初始化已完成的标志------- flag that initialisation has completed
     ap.initialised = true;
 }
 
 
 
+/***********************************************************************************************************************
+*函数原型：void Copter::startup_INS_ground()
+*函数功能：初始化
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：This function does all the calibrations, etc. that we need during a ground start
+*************************************************************************************************************************/
 
-//******************************************************************************
-//This function does all the calibrations, etc. that we need during a ground start
-//******************************************************************************
 void Copter::startup_INS_ground()
 {
     // initialise ahrs (may push imu calibration into the mpu6000 if using that device).
@@ -433,7 +445,13 @@ bool Copter::should_log(uint32_t mask)
     return false;
 #endif
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::init_ardupilot()
+*函数功能：初始化
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 // default frame_class to match firmware if possible
 void Copter::set_default_frame_class()
 {

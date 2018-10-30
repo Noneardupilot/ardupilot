@@ -37,7 +37,13 @@ AP_DEVO_Telem::AP_DEVO_Telem(const AP_AHRS &ahrs) :
 {
     devoPacket.header = DEVOM_SYNC_BYTE;
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::init_ardupilot()
+*函数功能：初始化
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 // init - perform require initialisation including detecting which protocol to use
 void AP_DEVO_Telem::init(const AP_SerialManager& serial_manager)
 {

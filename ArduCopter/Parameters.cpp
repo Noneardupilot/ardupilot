@@ -1156,9 +1156,17 @@ const AP_Param::ConversionInfo conversion_table[] = {
     { Parameters::Parameters::k_param_ch12_option_old,   0,      AP_PARAM_INT8,  "RC12_OPTION" },
 };
 
+/***********************************************************************************************************************
+*函数原型：void Copter::load_parameters(void)
+*函数功能：加载参数
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void Copter::load_parameters(void)
 {
-    if (!AP_Param::check_var_info()) {
+    if (!AP_Param::check_var_info())
+    {
         hal.console->printf("Bad var table\n");
         AP_HAL::panic("Bad var table");
     }
@@ -1189,6 +1197,17 @@ void Copter::load_parameters(void)
     AP_Param::set_frame_type_flags(AP_PARAM_FRAME_COPTER);
     
 }
+
+
+
+/***********************************************************************************************************************
+*函数原型：void Copter::load_parameters(void)
+*函数功能：加载参数
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
+
 
 // handle conversion of PID gains from Copter-3.3 to Copter-3.4
 void Copter::convert_pid_parameters(void)

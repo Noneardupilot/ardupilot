@@ -165,7 +165,8 @@ static void gpio_init(stm32_gpio_t *gpiop, const gpio_setup_t *config) {
   gpiop->MODER   = config->moder;
 }
 
-static void stm32_gpio_init(void) {
+static void stm32_gpio_init(void)
+{
 
   /* Enabling GPIO-related clocks, the mask comes from the
      registry header file.*/
@@ -215,23 +216,48 @@ static void stm32_gpio_init(void) {
  * @details This initialization must be performed just after stack setup
  *          and before any other initialization.
  */
-void __early_init(void) {
+
+
+
+/***********************************************************************************************************************
+*函数原型：void __early_init(void)
+*函数功能：早期初始化
+*修改日期：2018-10-30
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
+void __early_init(void)
+{
 #ifndef STM32F100_MCUCONF
   stm32_gpio_init();
 #endif
   stm32_clock_init();
 }
 
-void __late_init(void) {
-  halInit();
-  chSysInit();
+
+/***********************************************************************************************************************
+*函数原型：void __late_init(void)
+*函数功能：后期初始化
+*修改日期：2018-10-30
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
+void __late_init(void)
+{
+  halInit();    //hal初始化
+  chSysInit();  //chibios系统初始化
 #if CH_CFG_USE_HEAP == TRUE
-  malloc_init();
+  malloc_init(); //内存分配初始化
 #endif
 #ifdef HAL_USB_PRODUCT_ID
   setup_usb_strings();
 #endif
 }
+
+
+
+
+
 
 #if HAL_USE_SDC || defined(__DOXYGEN__)
 /**
@@ -279,6 +305,7 @@ bool mmc_lld_is_write_protected(MMCDriver *mmcp) {
  * @brief   Board-specific initialization code.
  * @todo    Add your board-specific code, if any.
  */
-void boardInit(void) {
+void boardInit(void)
+{
   HAL_BOARD_INIT_HOOK_CALL
 }

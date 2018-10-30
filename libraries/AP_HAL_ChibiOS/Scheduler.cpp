@@ -60,8 +60,8 @@ Scheduler::Scheduler()
 *************************************************************************************************************************************/
 void Scheduler::init()
 {
-    chBSemObjectInit(&_timer_semaphore, false); //定时器二进制信号量，初始状态是0，没有被取用，
-    chBSemObjectInit(&_io_semaphore, false);    //IO二进制信号量，初始状态是0，没有被取用，
+    chBSemObjectInit(&_timer_semaphore, false); //定时器二进制信号量，初始状态是0，没有被取用，所以后面的信号量就可以被使用
+    chBSemObjectInit(&_io_semaphore, false);    //IO二进制信号量，初始状态是0，没有被取用，，所以后面的信号量就可以被使用
     //设置定时器线程-这将调用任务在1kHz---- setup the timer thread - this will call tasks at 1kHz
     _timer_thread_ctx = chThdCreateStatic(_timer_thread_wa,
                      sizeof(_timer_thread_wa),
@@ -290,15 +290,15 @@ void Scheduler::_run_timers()
 {
 //	hal.uartG->printf("CHIBIOS\r\n");
 //	hal.uartG->printf("_in_timer_proc=%d\r\n",_in_timer_proc);
-    if (_in_timer_proc) //在定时器进程中？
+    if (_in_timer_proc) //在定时器进程中？，第一次不会进入if
     {
         return;
     }
     _in_timer_proc = true;
 
     int num_procs = 0;
-    chBSemWait(&_timer_semaphore); //等待定时器二进制信号量
-    num_procs = _num_timer_procs;  //定时器进程计数
+    chBSemWait(&_timer_semaphore);  //等待信号量，这里可以直接进去，不用再等待了，相当于共享资源保护，为什么？看上面对信号量的初始值的讲解
+    num_procs = _num_timer_procs;   //运行保存这个值，只有该任务执行完毕，才能更改
   //  hal.uartG->printf("num_procs=%d\r\n",num_procs);
     chBSemSignal(&_timer_semaphore);
     //现在调用基于计时器的驱动程序----- now call the timer based drivers
@@ -306,7 +306,7 @@ void Scheduler::_run_timers()
     {
         if (_timer_proc[i])
         {
-            _timer_proc[i]();
+            _timer_proc[i](); //这个函数在哪，看下面的函数
         }
     }
 
@@ -347,7 +347,7 @@ void Scheduler::_timer_thread(void *arg)
         //运行注册计时器------run registered timers
         sched->_run_timers();
 
-        //处理任何未决的RC输出请求---- process any pending RC output requests
+        //处理任何请求的的遥控器RC输出请求---- process any pending RC output requests
         hal.rcout->timer_tick();
     }
 }
@@ -363,7 +363,7 @@ void Scheduler::_timer_thread(void *arg)
 void Scheduler::_rcin_thread(void *arg)
 {
     Scheduler *sched = (Scheduler *)arg;
-    chRegSetThreadName("apm_rcin");
+    chRegSetThreadName("apm_rcin"); //进程名字
     while (!sched->_hal_initialized)
     {
         sched->delay_microseconds(20000);
@@ -371,7 +371,7 @@ void Scheduler::_rcin_thread(void *arg)
     while (true)
     {
         sched->delay_microseconds(2500);
-        ((RCInput *)hal.rcin)->_timer_tick();
+        ((RCInput *)hal.rcin)->_timer_tick(); //2.5ms运行一次
     }
 }
 
@@ -443,22 +443,37 @@ void Scheduler::_storage_thread(void* arg)
 {
     Scheduler *sched = (Scheduler *)arg;
     chRegSetThreadName("apm_storage");
-    while (!sched->_hal_initialized) {
+    while (!sched->_hal_initialized)
+    {
         sched->delay_microseconds(10000);
     }
-    while (true) {
-        sched->delay_microseconds(10000);
+    while (true)
+    {
+        sched->delay_microseconds(10000); //10ms
 
         // process any pending storage writes
         hal.storage->_timer_tick();
     }
 }
 
+/************************************************************************************************************************************
+*函数原型：void Scheduler::_run_io(void)
+*函数功能：进程初始化
+*修改日期：2018-10-29
+*备   注：
+*************************************************************************************************************************************/
 bool Scheduler::in_main_thread() const
 {
     return get_main_thread() == chThdGetSelfX();
 }
 
+
+/************************************************************************************************************************************
+*函数原型：void Scheduler::system_initialized()
+*函数功能：系统初始化
+*修改日期：2018-10-29
+*备   注：
+*************************************************************************************************************************************/
 void Scheduler::system_initialized()
 {
     if (_initialized)

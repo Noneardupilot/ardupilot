@@ -157,12 +157,21 @@ void Storage::write_block(uint16_t loc, const void *src, size_t n)
     }
 }
 
+
+/************************************************************************************************************************************
+*函数原型：void Storage::_timer_tick(void)
+*函数功能：
+*修改日期：2018-10-29
+*备   注：
+*************************************************************************************************************************************/
 void Storage::_timer_tick(void)
 {
-    if (!_initialised) {
+    if (!_initialised)
+    {
         return;
     }
-    if (_dirty_mask.empty()) {
+    if (_dirty_mask.empty())
+    {
         _last_empty_ms = AP_HAL::millis();
         return;
     }
@@ -170,12 +179,15 @@ void Storage::_timer_tick(void)
     // write out the first dirty line. We don't write more
     // than one to keep the latency of this call to a minimum
     uint16_t i;
-    for (i=0; i<CH_STORAGE_NUM_LINES; i++) {
-        if (_dirty_mask.get(i)) {
+    for (i=0; i<CH_STORAGE_NUM_LINES; i++)
+    {
+        if (_dirty_mask.get(i))
+        {
             break;
         }
     }
-    if (i == CH_STORAGE_NUM_LINES) {
+    if (i == CH_STORAGE_NUM_LINES)
+    {
         // this shouldn't be possible
         return;
     }

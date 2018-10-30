@@ -1493,7 +1493,13 @@ void GCS::send_mission_item_reached_message(uint16_t mission_index)
         }
     }
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::init_ardupilot()
+*函数功能：初始化
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void GCS::setup_uarts(AP_SerialManager &serial_manager)
 {
     for (uint8_t i = 1; i < MAVLINK_COMM_NUM_BUFFERS; i++)

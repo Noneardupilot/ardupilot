@@ -229,6 +229,15 @@ const AP_Param::GroupInfo AP_BoardConfig::var_info[] = {
     AP_GROUPEND
 };
 
+
+
+/***********************************************************************************************************************
+*函数原型：void AP_BoardConfig::init()
+*函数功能：初始化
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_BoardConfig::init()
 {
     board_setup();
@@ -242,6 +251,10 @@ void AP_BoardConfig::init()
 
     AP::rtc().set_utc_usec(hal.util->get_hw_rtc(), AP_RTC::SOURCE_HW);
 }
+
+
+
+
 
 // set default value for BRD_SAFETY_MASK
 void AP_BoardConfig::set_default_safety_ignore_mask(uint16_t mask)

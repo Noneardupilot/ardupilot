@@ -625,7 +625,8 @@ public:
     /*
       set a dataflash pointer for logging
      */
-    void set_dataflash(DataFlash_Class *dataflash) {
+    void set_dataflash(DataFlash_Class *dataflash)
+    {
         dataflash_p = dataflash;
     }
 

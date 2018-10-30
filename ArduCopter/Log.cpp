@@ -553,7 +553,13 @@ void Copter::Log_Write_Vehicle_Startup_Messages()
     gps.Write_DataFlash_Log_Startup_messages();
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void Copter::init_ardupilot()
+*函数功能：初始化
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void Copter::log_init(void)
 {
     DataFlash.Init(log_structure, ARRAY_SIZE(log_structure));

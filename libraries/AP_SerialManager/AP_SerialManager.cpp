@@ -163,7 +163,14 @@ AP_SerialManager::AP_SerialManager()
     AP_Param::setup_object_defaults(this, var_info);
 }
 
-// init_console - initialise console at default baud rate
+/***********************************************************************************************************************
+*函数原型：void AP_SerialManager::init_console()
+*函数功能：初始化usb，设置波特率115200
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：init_console - initialise console at default baud rate
+*************************************************************************************************************************/
+
 void AP_SerialManager::init_console()
 {
     // initialise console immediately at default size and baud
@@ -175,7 +182,15 @@ void AP_SerialManager::init_console()
 
 extern bool g_nsh_should_exit;
 
-// init - // init - initialise serial ports
+
+/***********************************************************************************************************************
+*函数原型：void AP_SerialManager::init()
+*函数功能：初始化串口
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：// init - // init - initialise serial ports
+*************************************************************************************************************************/
+
 void AP_SerialManager::init()
 {
     // initialise pointers to serial ports

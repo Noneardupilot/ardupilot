@@ -49,10 +49,15 @@ AP_BattMonitor::AP_BattMonitor(uint32_t log_battery_bit, battery_failsafe_handle
     }
     _singleton = this;
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::init_ardupilot()
+*函数功能：初始化
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 // init - instantiate the battery monitors
-void
-AP_BattMonitor::init()
+void AP_BattMonitor::init()
 {
     // check init has not been called before
     if (_num_instances != 0) {

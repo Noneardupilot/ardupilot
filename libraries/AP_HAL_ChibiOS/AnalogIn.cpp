@@ -247,7 +247,8 @@ void AnalogIn::init()
 void AnalogIn::read_adc(uint32_t *val)
 {
     chSysLock();
-    for (uint8_t i = 0; i < ADC_GRP1_NUM_CHANNELS; i++) {
+    for (uint8_t i = 0; i < ADC_GRP1_NUM_CHANNELS; i++)
+    {
         val[i] = sample_sum[i] / sample_count;
     }
     memset(sample_sum, 0, sizeof(sample_sum));
@@ -255,32 +256,40 @@ void AnalogIn::read_adc(uint32_t *val)
     chSysUnlock();
 }
 
-/*
-  called at 1kHz
- */
+
+/************************************************************************************************************************************
+*函数原型：vvoid AnalogIn::_timer_tick(void)
+*函数功能：进程初始化
+*修改日期：2018-10-29
+*备   注：called at 1kHz
+*************************************************************************************************************************************/
+
 void AnalogIn::_timer_tick(void)
 {
-    // read adc at 100Hz
+    //读取adc在100hz-----read adc at 100Hz
     uint32_t now = AP_HAL::micros();
     uint32_t delta_t = now - _last_run;
-    if (delta_t < 10000) {
+    if (delta_t < 10000)  //10ms，否则返回
+    {
         return;
     }
     _last_run = now;
 
     uint32_t buf_adc[ADC_GRP1_NUM_CHANNELS];
 
-    /* read all channels available */
+    /* 读取所有通道的值------read all channels available */
     read_adc(buf_adc);
 
-    // update power status flags
+    //更新电压状态-----update power status flags
     update_power_flags();
     
-    // match the incoming channels to the currently active pins
-    for (uint8_t i=0; i < ADC_GRP1_NUM_CHANNELS; i++) {
+    //将传入的信道与当前活动的引脚匹配---- match the incoming channels to the currently active pins
+    for (uint8_t i=0; i < ADC_GRP1_NUM_CHANNELS; i++)
+    {
 #ifdef ANALOG_VCC_5V_PIN
-        if (pin_config[i].channel == ANALOG_VCC_5V_PIN) {
-            // record the Vcc value for later use in
+        if (pin_config[i].channel == ANALOG_VCC_5V_PIN)
+        {
+            //记录VCC值以供以后使用---- record the Vcc value for later use in
             // voltage_average_ratiometric()
             _board_voltage = buf_adc[i] * pin_config[i].scaling;
         }
@@ -288,22 +297,26 @@ void AnalogIn::_timer_tick(void)
     }
 
 #if HAL_WITH_IO_MCU
-    // now handle special inputs from IOMCU
+    //处理IOMCU的特殊输入----- now handle special inputs from IOMCU
     _servorail_voltage = iomcu.get_vservo();
     _rssi_voltage = iomcu.get_vrssi();
 #endif
     
-    for (uint8_t i=0; i<ADC_GRP1_NUM_CHANNELS; i++) {
+    for (uint8_t i=0; i<ADC_GRP1_NUM_CHANNELS; i++)
+    {
         Debug("chan %u value=%u\n",
               (unsigned)pin_config[i].channel,
               (unsigned)buf_adc[i]);
-        for (uint8_t j=0; j < ANALOG_MAX_CHANNELS; j++) {
+        for (uint8_t j=0; j < ANALOG_MAX_CHANNELS; j++)
+        {
             ChibiOS::AnalogSource *c = _channels[j];
             if (c != nullptr) {
-                if (pin_config[i].channel == c->_pin) {
+                if (pin_config[i].channel == c->_pin)
+                {
                     // add a value
                     c->_add_value(buf_adc[i], _board_voltage);
-                } else if (c->_pin == ANALOG_SERVO_VRSSI_PIN) {
+                } else if (c->_pin == ANALOG_SERVO_VRSSI_PIN)
+                {
                     c->_add_value(_rssi_voltage / VOLTAGE_SCALING, 0);
                 }
             }
@@ -312,17 +325,20 @@ void AnalogIn::_timer_tick(void)
 
 #if CHIBIOS_ADC_MAVLINK_DEBUG
     static uint8_t count;
-    if (AP_HAL::millis() > 5000 && count++ == 10) {
+    if (AP_HAL::millis() > 5000 && count++ == 10)
+    {
         count = 0;
         uint16_t adc[6] {};
         uint8_t n = ADC_GRP1_NUM_CHANNELS;
-        if (n > 6) {
+        if (n > 6)
+        {
             n = 6;
         }
-        for (uint8_t i=0; i < n; i++) {
+        for (uint8_t i=0; i < n; i++)
+        {
             adc[i] = buf_adc[i];
         }
-        mavlink_msg_ap_adc_send(MAVLINK_COMM_0, adc[0], adc[1], adc[2], adc[3], adc[4], adc[5]);
+        mavlink_msg_ap_adc_send(MAVLINK_COMM_0, adc[0], adc[1], adc[2], adc[3], adc[4], adc[5]); //通过mavlink发送出去到地面站
     }
 #endif
 }
@@ -330,7 +346,12 @@ void AnalogIn::_timer_tick(void)
 
 
 
-
+/************************************************************************************************************************************
+*函数原型：vvoid AnalogIn::_timer_tick(void)
+*函数功能：进程初始化
+*修改日期：2018-10-29
+*备   注：called at 1kHz
+*************************************************************************************************************************************/
 AP_HAL::AnalogSource* AnalogIn::channel(int16_t pin) 
 {
     for (uint8_t j=0; j<ANALOG_MAX_CHANNELS; j++) {
