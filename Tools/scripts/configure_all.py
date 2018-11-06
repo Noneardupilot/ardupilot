@@ -39,4 +39,5 @@ for board in get_board_list():
     if not fnmatch.fnmatch(board, board_pattern):
         continue
     print("Building for %s" % board)
+  
     run_program(["./waf", "configure", "--board", board])

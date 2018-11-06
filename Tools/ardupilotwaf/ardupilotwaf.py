@@ -1,22 +1,32 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from __future__ import print_function
-from waflib import Build, Logs, Options, Utils
-from waflib.Configure import conf
-from waflib.TaskGen import before_method, feature
+#在开头加上from __future__ import print_function这句之后，即使在python2.X，使用print就得像python3.X那样加括号使用。python2.X中print不需要括号，而在python3.X中则需要。
+from __future__ import print_function   
+from waflib import Build, Logs, Options, Utils     #从waflib导入Build,Logs,Options,Utils
+
+
+
+from waflib.Configure import conf                  #waflib.Configure导入函数  
+
+print('ardupilot开始编译ardupilotwaf')  #字节添加代码
+
+from waflib.TaskGen import before_method, feature  #从waflib.TaskGen导入before_method，feature函数
 import os.path, os
 from collections import OrderedDict
-
+ 
 import ap_persistent
 
-SOURCE_EXTS = [
+
+
+SOURCE_EXTS = [                                    #定义字符列表
     '*.S',
     '*.c',
     '*.cpp',
 ]
 
-COMMON_VEHICLE_DEPENDENT_LIBRARIES = [
+
+COMMON_VEHICLE_DEPENDENT_LIBRARIES = [           #定义所有的设备库字符列表
     'AP_AccelCal',
     'AP_ADC',
     'AP_AHRS',
@@ -78,7 +88,8 @@ COMMON_VEHICLE_DEPENDENT_LIBRARIES = [
     'AC_Sprayer',
 ]
 
-def get_legacy_defines(sketch_name):
+#定义函数get_legacy_defines()  
+def get_legacy_defines(sketch_name):                
     return [
         'APM_BUILD_DIRECTORY=APM_BUILD_' + sketch_name,
         'SKETCH="' + sketch_name + '"',
@@ -89,10 +100,15 @@ IGNORED_AP_LIBRARIES = [
     'doc',
 ]
 
-@conf
+#‘@’符号用作函数修饰符是python2.4新增加的功能，修饰符必须出现在函数定义前一行，不允许和函数定义在同一行。
+# 从这里可以看出@conf 等价于 conf(ap_get_all_libraries())
+@conf  
+
+#定义函数ap_get_all_libraries()
 def ap_get_all_libraries(bld):
     if bld.env.BOOTLOADER:
         # we don't need the full set of libraries for the bootloader build
+        #print("+++++++++") 
         return ['AP_HAL']
     libraries = []
     for lib_node in bld.srcnode.ant_glob('libraries/*', dir=True, src=False):
@@ -106,7 +122,7 @@ def ap_get_all_libraries(bld):
         libraries.append(name)
     libraries.extend(['AP_HAL', 'AP_HAL_Empty'])
     return libraries
-
+# 从这里可以看出@conf 等价于 conf(ap_common_vehicle_libraries(bld))
 @conf
 def ap_common_vehicle_libraries(bld):
     libraries = COMMON_VEHICLE_DEPENDENT_LIBRARIES
@@ -120,6 +136,8 @@ def ap_common_vehicle_libraries(bld):
 
 _grouped_programs = {}
 
+
+# 从这里可以看出@conf 等价于 conf(ap_program())
 @conf
 def ap_program(bld,
                program_groups='bin',
@@ -168,7 +186,7 @@ def ap_program(bld,
 
     for group in program_groups:
         _grouped_programs.setdefault(group, []).append(tg)
-
+# 从这里可以看出@conf 等价于 conf(ap_example())
 @conf
 def ap_example(bld, **kw):
     kw['program_groups'] = 'examples'
@@ -178,6 +196,8 @@ def unique_list(items):
     '''remove duplicate elements from a list while maintaining ordering'''
     return list(OrderedDict.fromkeys(items))
 
+
+# @conf 等价于 conf(ap_stlib())
 @conf
 def ap_stlib(bld, **kw):
     if 'name' not in kw:
@@ -215,6 +235,8 @@ def ap_stlib_target(self):
         self.target = self.target[1:]
     self.target = '#%s' % os.path.join('lib', self.target)
 
+
+# @conf 等价于 conf(ap_find_tests)
 @conf
 def ap_find_tests(bld, use=[]):
     if not bld.env.HAS_GTEST:
@@ -244,6 +266,9 @@ def ap_find_tests(bld, use=[]):
 
 _versions = []
 
+
+
+# @conf 等价于 conf(ap_version_append_str())
 @conf
 def ap_version_append_str(ctx, k, v):
     ctx.env['AP_VERSION_ITEMS'] += [(k, '"{}"'.format(os.environ.get(k, v)))]
@@ -333,12 +358,14 @@ def test_summary(bld):
 
 _build_commands = {}
 
+
+
 def _process_build_command(bld):
     if bld.cmd not in _build_commands:
         return
 
     params = _build_commands[bld.cmd]
-
+   
     targets = params['targets']
     if targets:
         if bld.targets:
@@ -349,12 +376,14 @@ def _process_build_command(bld):
     program_group_list = Utils.to_list(params['program_group_list'])
     bld.options.program_group.extend(program_group_list)
 
+#编译命令
 def build_command(name,
                    targets=None,
                    program_group_list=[],
                    doc='build shortcut'):
     _build_commands[name] = dict(
         targets=targets,
+       
         program_group_list=program_group_list,
     )
 
@@ -362,6 +391,9 @@ def build_command(name,
         cmd = name
     context_class.__doc__ = doc
 
+
+
+#定义_select_programs_from_group(bld)函数
 def _select_programs_from_group(bld):
     groups = bld.options.program_group
     if not groups:
@@ -431,5 +463,10 @@ cleaning the build.
 ''')
 
 def build(bld):
+    print("^^^^^^^^^^^^^^^^^^")
     bld.add_pre_fun(_process_build_command)
     bld.add_pre_fun(_select_programs_from_group)
+    print("^^^^^^^^^^^^^^^^^^")
+
+
+

@@ -12,7 +12,7 @@ extern const AP_HAL::HAL &hal;
 
 //#pragma GCC optimize("Og")
 
-static AP_IOMCU_FW iomcu;
+static AP_IOMCU_FW iomcu;  //静态对象
 
 void setup();
 void loop();
@@ -110,12 +110,22 @@ static UARTConfig uart_cfg = {
     0
 };
 
+
+/***********************************************************************************************************************
+*函数原型：void setup(void)
+*函数功能：固件初始化
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void setup(void)
 {
-    hal.rcin->init();
-    hal.rcout->init();
 
-    for (uint8_t i = 0; i< 14; i++) {
+    hal.rcin->init();   //初始化rc输入
+    hal.rcout->init(); //初始化rc输出，电机
+
+    for (uint8_t i = 0; i< 14; i++)
+    {
         hal.rcout->enable_ch(i);
     }
 
@@ -126,39 +136,63 @@ void setup(void)
     uartStartReceive(&UARTD2, sizeof(iomcu.rx_io_packet), &iomcu.rx_io_packet);
 }
 
+/***********************************************************************************************************************
+*函数原型：void setup(void)
+*函数功能：固件初始化
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void loop(void)
 {
     iomcu.update();
 }
 
+/***********************************************************************************************************************
+*函数原型：void setup(void)
+*函数功能：固件初始化
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_IOMCU_FW::init()
 {
     thread_ctx = chThdGetSelfX();
 
-    if (palReadLine(HAL_GPIO_PIN_IO_HW_DETECT1) == 1 && palReadLine(HAL_GPIO_PIN_IO_HW_DETECT2) == 0) {
+    if (palReadLine(HAL_GPIO_PIN_IO_HW_DETECT1) == 1 && palReadLine(HAL_GPIO_PIN_IO_HW_DETECT2) == 0)
+    {
         has_heater = true;
     }
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void setup(void)
+*函数功能：固件初始化
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_IOMCU_FW::update()
 {
     eventmask_t mask = chEvtWaitAnyTimeout(~0, chTimeMS2I(1));
 
-    if (do_reboot && (AP_HAL::millis() > reboot_time)) {
+    if (do_reboot && (AP_HAL::millis() > reboot_time))
+    {
         hal.scheduler->reboot(true);
         while (true) {}
     }
 
     if ((mask & EVENT_MASK(IOEVENT_PWM)) ||
-        (last_safety_off != reg_status.flag_safety_off)) {
+        (last_safety_off != reg_status.flag_safety_off))
+    {
         last_safety_off = reg_status.flag_safety_off;
         pwm_out_update();
     }
 
     // run remaining functions at 1kHz
     uint32_t now = AP_HAL::millis();
-    if (now != last_loop_ms) {
+    if (now != last_loop_ms)
+    {
         last_loop_ms = now;
         heater_update();
         rcin_update();
@@ -167,6 +201,10 @@ void AP_IOMCU_FW::update()
         hal.rcout->timer_tick();
     }
 }
+
+
+
+
 
 void AP_IOMCU_FW::pwm_out_update()
 {

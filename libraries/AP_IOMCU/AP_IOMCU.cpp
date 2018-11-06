@@ -41,6 +41,14 @@ AP_IOMCU::AP_IOMCU(AP_HAL::UARTDriver &_uart) :
 /*
   initialise library, starting thread
  */
+
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU::init(void)
+*函数功能：Io上的MCU初始化
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_IOMCU::init(void)
 {
     // uart runs at 1.5MBit
@@ -48,20 +56,30 @@ void AP_IOMCU::init(void)
     uart.set_blocking_writes(false);
     uart.set_unbuffered_writes(true);
 
-    // check IO firmware CRC
+    //检查IO固件的CRC-----check IO firmware CRC
     hal.scheduler->delay(2000);
     
     AP_BoardConfig *boardconfig = AP_BoardConfig::get_instance();
-    if (!boardconfig || boardconfig->io_enabled() == 1) {
-        check_crc();
+    if (!boardconfig || boardconfig->io_enabled() == 1)
+    {
+        check_crc(); //检测是否需要跟新固件
     }
 
-    if (!hal.scheduler->thread_create(FUNCTOR_BIND_MEMBER(&AP_IOMCU::thread_main, void), "IOMCU",
-                                      1024, AP_HAL::Scheduler::PRIORITY_BOOST, 1)) {
+    if (!hal.scheduler->thread_create(FUNCTOR_BIND_MEMBER(&AP_IOMCU::thread_main, void), "IOMCU", //创建一个实例
+                                      1024, AP_HAL::Scheduler::PRIORITY_BOOST, 1))
+    {
         AP_HAL::panic("Unable to allocate IOMCU thread");
     }
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU::init(void)
+*函数功能：Io上的MCU初始化
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 /*
   handle event failure
  */
@@ -75,6 +93,14 @@ void AP_IOMCU::event_failed(uint8_t event)
 /*
   main IO thread loop
  */
+
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU::thread_main(void)
+*函数功能：IO线程
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_IOMCU::thread_main(void)
 {
     thread_ctx = chThdGetSelfX();
@@ -85,20 +111,24 @@ void AP_IOMCU::thread_main(void)
     
     trigger_event(IOEVENT_INIT);
     
-    while (true) {
+    while (true)
+    {
         eventmask_t mask = chEvtWaitAnyTimeout(~0, chTimeMS2I(10));
 
         // check for pending IO events
-        if (mask & EVENT_MASK(IOEVENT_SEND_PWM_OUT)) {
-            send_servo_out();
+        if (mask & EVENT_MASK(IOEVENT_SEND_PWM_OUT))
+        {
+            send_servo_out(); //发送电机输出
         }
 
-        if (mask & EVENT_MASK(IOEVENT_INIT)) {
+        if (mask & EVENT_MASK(IOEVENT_INIT))
+        {
             // set IO_ARM_OK and FMU_ARMED
             if (!modify_register(PAGE_SETUP, PAGE_REG_SETUP_ARMING, 0,
                                  P_SETUP_ARMING_IO_ARM_OK |
                                  P_SETUP_ARMING_FMU_ARMED |
-                                 P_SETUP_ARMING_RC_HANDLING_DISABLED)) {
+                                 P_SETUP_ARMING_RC_HANDLING_DISABLED))
+            {
                 event_failed(IOEVENT_INIT);
                 continue;
             }
@@ -106,29 +136,35 @@ void AP_IOMCU::thread_main(void)
 
         
         if (mask & EVENT_MASK(IOEVENT_FORCE_SAFETY_OFF)) {
-            if (!write_register(PAGE_SETUP, PAGE_REG_SETUP_FORCE_SAFETY_OFF, FORCE_SAFETY_MAGIC)) {
+            if (!write_register(PAGE_SETUP, PAGE_REG_SETUP_FORCE_SAFETY_OFF, FORCE_SAFETY_MAGIC))
+            {
                 event_failed(IOEVENT_FORCE_SAFETY_OFF);
                 continue;
             }
         }
 
-        if (mask & EVENT_MASK(IOEVENT_FORCE_SAFETY_ON)) {
-            if (!write_register(PAGE_SETUP, PAGE_REG_SETUP_FORCE_SAFETY_ON, FORCE_SAFETY_MAGIC)) {
+        if (mask & EVENT_MASK(IOEVENT_FORCE_SAFETY_ON))
+        {
+            if (!write_register(PAGE_SETUP, PAGE_REG_SETUP_FORCE_SAFETY_ON, FORCE_SAFETY_MAGIC))
+            {
                 event_failed(IOEVENT_FORCE_SAFETY_ON);
                 continue;
             }
         }
 
         
-        if (mask & EVENT_MASK(IOEVENT_SET_RATES)) {
+        if (mask & EVENT_MASK(IOEVENT_SET_RATES))
+        {
             if (!write_register(PAGE_SETUP, PAGE_REG_SETUP_ALTRATE, rate.freq) ||
-                !write_register(PAGE_SETUP, PAGE_REG_SETUP_PWM_RATE_MASK, rate.chmask)) {
+                !write_register(PAGE_SETUP, PAGE_REG_SETUP_PWM_RATE_MASK, rate.chmask))
+            {
                 event_failed(IOEVENT_SET_RATES);
                 continue;
             }
         }
 
-        if (mask & EVENT_MASK(IOEVENT_ENABLE_SBUS)) {
+        if (mask & EVENT_MASK(IOEVENT_ENABLE_SBUS))
+        {
             if (!write_register(PAGE_SETUP, PAGE_REG_SETUP_SBUS_RATE, rate.sbus_rate_hz) ||
                 !modify_register(PAGE_SETUP, PAGE_REG_SETUP_FEATURES, 0,
                                  P_SETUP_FEATURES_SBUS1_OUT)) {
@@ -137,7 +173,8 @@ void AP_IOMCU::thread_main(void)
             }
         }
 
-        if (mask & EVENT_MASK(IOEVENT_SET_HEATER_TARGET)) {
+        if (mask & EVENT_MASK(IOEVENT_SET_HEATER_TARGET))
+        {
             if (!write_register(PAGE_SETUP, PAGE_REG_SETUP_HEATER_DUTY_CYCLE, heater_duty_cycle)) {
                 event_failed(IOEVENT_SET_HEATER_TARGET);
                 continue;
@@ -206,7 +243,8 @@ void AP_IOMCU::thread_main(void)
         }
 
         // update failsafe pwm
-        if (pwm_out.failsafe_pwm_set != pwm_out.failsafe_pwm_sent) {
+        if (pwm_out.failsafe_pwm_set != pwm_out.failsafe_pwm_sent)
+        {
             uint8_t set = pwm_out.failsafe_pwm_set;
             if (write_registers(PAGE_FAILSAFE_PWM, 0, IOMCU_MAX_CHANNELS, pwm_out.failsafe_pwm)) {
                 pwm_out.failsafe_pwm_sent = set;
@@ -214,19 +252,25 @@ void AP_IOMCU::thread_main(void)
         }
     }
 }
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU::send_servo_out()
+*函数功能：IO线程
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：send servo output data
+*************************************************************************************************************************/
 
-/*
-  send servo output data
- */
 void AP_IOMCU::send_servo_out()
 {
 #if 0
     // simple method to test IO failsafe
-    if (AP_HAL::millis() > 30000) {
+    if (AP_HAL::millis() > 30000)
+    {
         return;
     }
 #endif
-    if (pwm_out.num_channels > 0) {
+    if (pwm_out.num_channels > 0)
+    {
         uint8_t n = pwm_out.num_channels;
         if (rate.sbus_rate_hz == 0) {
             n = MIN(n, 8);
@@ -249,7 +293,8 @@ void AP_IOMCU::read_rc_input()
     // read a min of 9 channels and max of IOMCU_MAX_CHANNELS
     uint8_t n = MIN(MAX(9, rc_input.count), IOMCU_MAX_CHANNELS);
     read_registers(PAGE_RAW_RCIN, 0, 6+n, (uint16_t *)&rc_input);
-    if (rc_input.flags_rc_ok && !rc_input.flags_failsafe) {
+    if (rc_input.flags_rc_ok && !rc_input.flags_failsafe)
+    {
         rc_input.last_input_us = AP_HAL::micros();
     }
 }
@@ -603,9 +648,15 @@ void AP_IOMCU::update_safety_options(void)
     }
 }
 
-/*
-  check ROMFS firmware against CRC on IOMCU, and if incorrect then upload new firmware
- */
+
+/***********************************************************************************************************************
+*函数原型：bool AP_IOMCU::check_crc(void)
+*函数功能：iomcu检测：检查ROMFS固件对ICOMU上的CRC，如果不正确，则上传新固件
+*修改日期：2018-9-13
+*修改作者：cihang_uav
+*备注信息：check ROMFS firmware against CRC on IOMCU, and if incorrect then upload new firmware
+*************************************************************************************************************************/
+
 bool AP_IOMCU::check_crc(void)
 {
     // flash size minus 4k bootloader
@@ -639,7 +690,8 @@ bool AP_IOMCU::check_crc(void)
     const uint16_t magic = REBOOT_BL_MAGIC;
     write_registers(PAGE_SETUP, PAGE_REG_SETUP_REBOOT_BL, 1, &magic);
 
-    if (!upload_fw()) {
+    if (!upload_fw()) //更新固件
+    {
         free(fw);
         fw = nullptr;
         AP_BoardConfig::sensor_config_error("Failed to update IO firmware");

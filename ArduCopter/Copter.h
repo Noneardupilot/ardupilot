@@ -969,13 +969,13 @@ private:
     ModeFollow mode_follow;
 #endif
 
-#if MODE_ZIGZAG_ENABLED == ENABLED
+//#if MODE_ZIGZAG_ENABLED == ENABLED
     ModeZigZag mode_zigzag;
-#endif
+//#endif
 
-#if MODE_USHAPE_ENABLED == ENABLED
+//#if MODE_USHAPE_ENABLED == ENABLED
     ModeUshape mode_ushape;
-#endif
+//#endif
 
 
 #if MODE_GUIDED_ENABLED == ENABLED

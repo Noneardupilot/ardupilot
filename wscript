@@ -1,37 +1,54 @@
-#!/usr/bin/env python
-# encoding: utf-8
+#!/usr/bin/env python    #python输入格式要求，大部分python文件的头部都会写上 #!/usr/bin/python 或者 #!/usr/bin/env ，这个语句主要和运行模式有关，使用后者可以解释不一定在python目录
+# encoding: utf-8        #一种变长字节编码方式
 
-from __future__ import print_function
 
-import os.path
-import sys
-sys.path.insert(0, 'Tools/ardupilotwaf/')
+#在开头加上from __future__ import print_function这句之后，即使在python2.X，使用print就得像python3.X那样加括号使用。
+#python2.X中print不需要括号，而在python3.X中则需要。
 
-import ardupilotwaf
-import boards
+from __future__ import print_function #主要就是设置print
+print('ardupilot开始编译')          #字节添加代码
+print('ardupilot开始编译根目录wscript')  #字节添加代码
+import os.path  #导入os.path模块,获取当前脚本路径，加载到sys.path里，就是组织代码使用
+import sys      #导入sys,用来获取当前模块的绝对路径
+sys.path.insert(0, 'Tools/ardupilotwaf/') #把ardupilotwaf加载到当前路径
 
-from waflib import Build, ConfigSet, Configure, Context, Utils
+import ardupilotwaf #上面加载路径完成后，现在就可以导入这个模块，可以被后面使用
+print("ardupilotwaf=",ardupilotwaf) #这个打印输出：ardupilotwaf= <module 'ardupilotwaf' from 'Tools/ardupilotwaf/ardupilotwaf.pyc'>
+import boards       #导入boards
+print("boards=",boards)  #打印输出：boards= <module 'boards' from 'Tools/ardupilotwaf/boards.pyc'>
 
-# TODO: implement a command 'waf help' that shows the basic tasks a
+from waflib import Build, ConfigSet, Configure, Context, Utils #从waflib库导入Build, ConfigSet, Configure, Context, Utils;这个waflib在modules下面
+
+# TODO: implement a command 'waf help' that shows the basic tasks a（执行waf命令帮助（waf help））
 # developer might want to do: e.g. how to configure a board, compile a
 # vehicle, compile all the examples, add a new example. Should fit in
 # less than a terminal screen, ideally commands should be copy
 # pastable. Add the 'export waf="$PWD/waf"' trick to be copy-pastable
 # as well.
+#注意：实现“waf help”命令，该命令显示开发人员可能希望执行的基本任务a（执行waf command help（waf help））
+#例如，如何配置板、编译设备、编译所有示例、添加新示例。在不适合终端屏幕的情况下，理想的命令应该是可复制的。添加“导出WAF=”$PDW/WAF“的技巧也可以复制粘贴。
+
+
 
 # TODO: replace defines with the use of the generated ap_config.h file
 # this makes recompilation at least when defines change. which might
 # be sufficient.
 
-# Default installation prefix for Linux boards
-default_prefix = '/usr/'
+# Default installation prefix for Linux boards  #默认初始化是Linux板
 
-def _set_build_context_variant(variant):
+
+
+default_prefix = '/usr/'  #变量赋值,默认前缀
+
+
+#定义函数
+def _set_build_context_variant(variant): 
     for c in Context.classes:
         if not issubclass(c, Build.BuildContext):
             continue
         c.variant = variant
-
+ 
+#定义函数
 def init(ctx):
     env = ConfigSet.ConfigSet()
     try:
@@ -48,14 +65,17 @@ def init(ctx):
     # define the variant build commands according to the board
     _set_build_context_variant(env.VARIANT)
 
+#定义函数
+
 def options(opt):
     opt.load('compiler_cxx compiler_c waf_unit_test python')
     opt.load('ardupilotwaf')
     opt.load('build_summary')
-
     g = opt.ap_groups['configure']
-
+    print("运行测试")
     boards_names = boards.get_boards_names()
+    print(boards_names)
+    print("g.add_option=",g.add_option)
     g.add_option('--board',
         action='store',
         choices=boards_names,
@@ -97,7 +117,9 @@ submodules at specific revisions.
     g.add_option('--enable-header-checks', action='store_true',
         default=False,
         help="Enable checking of headers")
-
+    print('***************************')
+    print("为啥我会显示到ubuntu界面上？我在哪里执行的？欢迎分析我")
+    print('***************************')
     g.add_option('--default-parameters',
         default=None,
         help='set default parameters to embed in the firmware')
@@ -151,7 +173,10 @@ configuration in order to save typing.
         action='store_true',
         default=False,
         help='Force a static build')
+   
+    print('******options end*************')
 
+#定义函数
 def _collect_autoconfig_files(cfg):
     for m in sys.modules.values():
         paths = []
@@ -169,8 +194,9 @@ def _collect_autoconfig_files(cfg):
             with open(p, 'rb') as f:
                 cfg.hash = Utils.h_list((cfg.hash, f.read()))
                 cfg.files.append(p)
-
+#定义函数
 def configure(cfg):
+    print("运行configure")
     cfg.env.BOARD = cfg.options.board
     cfg.env.DEBUG = cfg.options.debug
     cfg.env.AUTOCONFIG = cfg.options.autoconfig
@@ -187,25 +213,28 @@ def configure(cfg):
 
     # Allow to differentiate our build from the make build
     cfg.define('WAF_BUILD', 1)
-
-    cfg.msg('Autoconfiguration', 'enabled' if cfg.options.autoconfig else 'disabled')
+   
+    cfg.msg('Autoconfiguration', 'enabled' if cfg.options.autoconfig else 'disabled')#发送
 
     if cfg.options.static:
         cfg.msg('Using static linking', 'yes', color='YELLOW')
         cfg.env.STATIC_LINKING = True
 
     cfg.load('ap_library')
-
+    #print("函数运行这里3？")
     cfg.msg('Setting board to', cfg.options.board)
-    cfg.get_board().configure(cfg)
 
+    cfg.get_board().configure(cfg)#这里有检查
+    
+    #print("函数运行这里7？")
     cfg.load('clang_compilation_database')
     cfg.load('waf_unit_test')
     cfg.load('mavgen')
     cfg.load('uavcangen')
-
+    
     cfg.env.SUBMODULE_UPDATE = cfg.options.submodule_update
-
+    #print("cfg=",cfg)
+    #print("函数运行这里4？")
     cfg.start_msg('Source is git repository')
     if cfg.srcnode.find_node('.git'):
         cfg.end_msg('yes')
@@ -214,6 +243,7 @@ def configure(cfg):
         cfg.env.SUBMODULE_UPDATE = False
 
     cfg.msg('Update submodules', 'yes' if cfg.env.SUBMODULE_UPDATE else 'no')
+    #print("函数运行这里2？")
     cfg.load('git_submodule')
 
     if cfg.options.enable_benchmarks:
@@ -221,7 +251,8 @@ def configure(cfg):
     cfg.load('gtest')
     cfg.load('static_linking')
     cfg.load('build_summary')
-
+    
+    
     cfg.start_msg('Benchmarks')
     if cfg.env.HAS_GBENCHMARK:
         cfg.end_msg('enabled')
@@ -259,11 +290,12 @@ def configure(cfg):
 
     # Always use system extensions
     cfg.define('_GNU_SOURCE', 1)
-
+    print("函数运行这里？")
     cfg.write_config_header(os.path.join(cfg.variant, 'ap_config.h'))
 
     _collect_autoconfig_files(cfg)
 
+#定义函数
 def collect_dirs_to_recurse(bld, globs, **kw):
     dirs = []
     globs = Utils.to_list(globs)
@@ -277,9 +309,15 @@ def collect_dirs_to_recurse(bld, globs, **kw):
             dirs.append(d.parent.relpath())
     return dirs
 
-def list_boards(ctx):
-    print(*boards.get_boards_names())
 
+#定义函数
+def list_boards(ctx):
+   
+    print(*boards.get_boards_names()) #这里打印板子名称
+    
+
+
+#定义函数
 def board(ctx):
     env = ConfigSet.ConfigSet()
     try:
@@ -288,9 +326,11 @@ def board(ctx):
     except:
         print('No board currently configured')
         return
-
+    print('***************************')
     print('Board configured to: {}'.format(env.VARIANT))
-
+    print('***************************')
+    
+#定义函数   
 def _build_cmd_tweaks(bld):
     if bld.cmd == 'check-all':
         bld.options.all_tests = True
@@ -301,6 +341,7 @@ def _build_cmd_tweaks(bld):
             bld.fatal('check: gtest library is required')
         bld.options.clear_failed_tests = True
 
+#定义函数
 def _build_dynamic_sources(bld):
     if not bld.env.BOOTLOADER:
         bld(
@@ -342,6 +383,7 @@ def _build_dynamic_sources(bld):
         bld.bldnode.abspath(),
     ])
 
+#定义函数
 def _build_common_taskgens(bld):
     # NOTE: Static library with vehicle set to UNKNOWN, shared by all
     # the tools and examples. This is the first step until the
@@ -359,6 +401,7 @@ def _build_common_taskgens(bld):
     if bld.env.HAS_GBENCHMARK:
         bld.libbenchmark()
 
+#定义函数
 def _build_recursion(bld):
     common_dirs_patterns = [
         # TODO: Currently each vehicle also generate its own copy of the
@@ -392,7 +435,7 @@ def _build_recursion(bld):
     )
     if bld.env.IOMCU_FW is not None:
         if bld.env.IOMCU_FW:
-            dirs_to_recurse.append('libraries/AP_IOMCU/iofirmware')
+            dirs_to_recurse.append('libraries/AP_IOMCU/iofirmware') #挂起IO_MCU
     for p in hal_dirs_patterns:
         dirs_to_recurse += collect_dirs_to_recurse(
             bld,
@@ -407,6 +450,7 @@ def _build_recursion(bld):
     for d in dirs_to_recurse:
         bld.recurse(d)
 
+#定义函数
 def _build_post_funs(bld):
     if bld.cmd == 'check':
         bld.add_post_fun(ardupilotwaf.test_summary)
@@ -416,13 +460,17 @@ def _build_post_funs(bld):
     if bld.env.SUBMODULE_UPDATE:
         bld.git_submodule_post_fun()
 
+#定义函数
 def load_pre_build(bld):
     '''allow for a pre_build() function in build modules'''
     brd = bld.get_board()
     if getattr(brd, 'pre_build', None):
         brd.pre_build(bld)    
-
+#定义函数
 def build(bld):
+    print("=======小历====================")
+    
+    print("===========================")
     config_hash = Utils.h_file(bld.bldnode.make_node('ap_config.h').abspath())
     bld.env.CCDEPS = config_hash
     bld.env.CXXDEPS = config_hash
@@ -489,10 +537,12 @@ class LocalInstallContext(Build.InstallContext):
         self.local_destdir = os.path.join(self.variant_dir, 'install')
 
     def execute(self):
+        print("NNNNNN3")
         old_destdir = self.options.destdir
         self.options.destdir = self.local_destdir
         r = super(LocalInstallContext, self).execute()
         self.options.destdir = old_destdir
+        print("execute(self)")
         return r
 
 class RsyncContext(LocalInstallContext):
@@ -523,3 +573,7 @@ class RsyncContext(LocalInstallContext):
             self.fatal('Destination for rsync not defined. Either pass --rsync-dest here or during configuration.')
 
         tg.post()
+
+    
+    
+    

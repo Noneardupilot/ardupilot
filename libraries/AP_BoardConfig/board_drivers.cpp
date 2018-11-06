@@ -323,26 +323,31 @@ void AP_BoardConfig::board_setup_sbus(void)
 #endif
 }
 
+/***********************************************************************************************************************
+*函数原型：void AP_BoardConfig::board_setup()
+*函数功能：设置外围设备和驱动程序
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：setup peripherals and drivers
+*************************************************************************************************************************/
 
-/*
-  setup peripherals and drivers
- */
 void AP_BoardConfig::board_setup()
 {
 #if CONFIG_HAL_BOARD == HAL_BOARD_PX4 || CONFIG_HAL_BOARD == HAL_BOARD_VRBRAIN
-    px4_setup_peripherals();
+    px4_setup_peripherals(); //这里配置px4类型的板子
     px4_setup_pwm();
     px4_setup_safety_mask();
 #elif CONFIG_HAL_BOARD == HAL_BOARD_CHIBIOS
     // init needs to be done after boardconfig is read so parameters are set
-    hal.gpio->init();
-    hal.rcin->init();
-    hal.rcout->init();
+    hal.gpio->init();        //初始化GPIO
+    hal.rcin->init();        //初始化rc_In
+    hal.rcout->init();       //初始化rc_out
 #endif
-    board_setup_uart();
-    board_setup_sbus();
+    board_setup_uart();      //初始化串口
+    board_setup_sbus();      //初始化Sbus
 #if AP_FEATURE_BOARD_DETECT
-    board_setup_drivers();
+    board_setup_drivers();   //配置板层识别
 #endif
 }
+
 

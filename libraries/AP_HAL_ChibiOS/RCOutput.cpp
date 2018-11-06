@@ -44,17 +44,26 @@ struct RCOutput::irq_state RCOutput::irq;
 
 // #pragma GCC optimize("Og")
 
-/*
-  initialise RC output driver
- */
+
+
+/***********************************************************************************************************************
+*函数原型：void RCOutput::init()
+*函数功能：电机输出设置
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：initialise RC output driver
+*************************************************************************************************************************/
+
 void RCOutput::init()
 {
     uint8_t pwm_count = AP_BoardConfig::get_pwm_count();
-    for (uint8_t i = 0; i < NUM_GROUPS; i++ ) {
+    for (uint8_t i = 0; i < NUM_GROUPS; i++ )
+    {
         //Start Pwm groups
         pwm_group &group = pwm_group_list[i];
         group.current_mode = MODE_PWM_NORMAL;
-        for (uint8_t j = 0; j < 4; j++ ) {
+        for (uint8_t j = 0; j < 4; j++ )
+        {
             uint8_t chan = group.chan[j];
             if (chan >= pwm_count) {
                 group.chan[j] = CHAN_DISABLED;
@@ -72,7 +81,8 @@ void RCOutput::init()
     }
 
 #if HAL_WITH_IO_MCU
-    if (AP_BoardConfig::io_enabled()) {
+    if (AP_BoardConfig::io_enabled())
+    {
         iomcu.init();
         // with IOMCU the local (FMU) channels start at 8
         chan_offset = 8;

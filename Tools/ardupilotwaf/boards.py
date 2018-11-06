@@ -10,8 +10,10 @@ from waflib.Configure import conf
 _board_classes = {}
 _board = None
 
+print('ardupilot开始编译board')  #字节添加代码
+#类定义Meta板
 class BoardMeta(type):
-    def __init__(cls, name, bases, dct):
+    def __init__(cls, name, bases, dct):     #方法定义
         super(BoardMeta, cls).__init__(name, bases, dct)
 
         if 'abstract' not in cls.__dict__:
@@ -27,6 +29,7 @@ class BoardMeta(type):
             raise Exception('board named %s already exists' % board_name)
         _board_classes[board_name] = cls
 
+#类定义
 class Board:
     abstract = True
 
@@ -219,7 +222,9 @@ Board = BoardMeta('Board', Board.__bases__, dict(Board.__dict__))
 def add_dynamic_boards():
     '''add boards based on existance of hwdef.dat in subdirectories for ChibiOS'''
     dirname, dirlist, filenames = next(os.walk('libraries/AP_HAL_ChibiOS/hwdef'))
+
     for d in dirlist:
+	#print d
         if d in _board_classes.keys():
             continue
         hwdef = os.path.join(dirname, d, 'hwdef.dat')
@@ -248,6 +253,8 @@ def get_board(ctx):
 # NOTE: Keeping all the board definitions together so we can easily
 # identify opportunities to simplify common flags. In the future might
 # be worthy to keep board definitions in files of their own.
+
+#注意：将所有的板定义保持在一起，这样我们就可以很容易地识别简化通用标志的机会。在未来可能值得保留的板层定义在自己的文件。
 
 class sitl(Board):
     def configure_env(self, cfg, env):
@@ -300,7 +307,8 @@ class sitl(Board):
             env.CXXFLAGS += [
                 '-fno-slp-vectorize' # compiler bug when trying to use SLP
             ]
-            
+
+#定义chibios板          
 class chibios(Board):
     toolchain = 'arm-none-eabi'
 
@@ -315,7 +323,6 @@ class chibios(Board):
             HAVE_OCLOEXEC = 0,
             HAVE_STD_NULLPTR_T = 0,
         )
-
         env.AP_LIBRARIES += [
             'AP_HAL_ChibiOS',
         ]
@@ -435,8 +442,9 @@ class chibios(Board):
     def build(self, bld):
         super(chibios, self).build(bld)
         bld.ap_version_append_str('CHIBIOS_GIT_VERSION', bld.git_submodule_head_hash('ChibiOS', short=True))
+      
         bld.load('chibios')
-
+      
     def pre_build(self, bld):
         '''pre-build hook that gets called before dynamic sources'''
         super(chibios, self).pre_build(bld)
@@ -445,7 +453,7 @@ class chibios(Board):
         fun = getattr(module, 'pre_build', None)
         if fun:
             fun(bld)
-
+#定义linux板  
 class linux(Board):
     def configure_env(self, cfg, env):
         super(linux, self).configure_env(cfg, env)
@@ -489,6 +497,7 @@ class linux(Board):
             # Avoid infinite recursion
             bld.options.upload = False
 
+#定义板子类型erleboard
 class erleboard(linux):
     toolchain = 'arm-linux-gnueabihf'
 
@@ -498,7 +507,7 @@ class erleboard(linux):
         env.DEFINES.update(
             CONFIG_HAL_BOARD_SUBTYPE = 'HAL_BOARD_SUBTYPE_LINUX_ERLEBOARD',
         )
-
+#定义板子类型navio
 class navio(linux):
     toolchain = 'arm-linux-gnueabihf'
 
@@ -508,7 +517,7 @@ class navio(linux):
         env.DEFINES.update(
             CONFIG_HAL_BOARD_SUBTYPE = 'HAL_BOARD_SUBTYPE_LINUX_NAVIO',
         )
-
+#定义板子类型navio2
 class navio2(linux):
     toolchain = 'arm-linux-gnueabihf'
 
@@ -518,7 +527,7 @@ class navio2(linux):
         env.DEFINES.update(
             CONFIG_HAL_BOARD_SUBTYPE = 'HAL_BOARD_SUBTYPE_LINUX_NAVIO2',
         )
-
+#定义板子类型edge
 class edge(linux):
     toolchain = 'arm-linux-gnueabihf'
 
@@ -531,7 +540,7 @@ class edge(linux):
         env.DEFINES.update(
             CONFIG_HAL_BOARD_SUBTYPE = 'HAL_BOARD_SUBTYPE_LINUX_EDGE',
         )
-
+#定义板子类型zynq
 class zynq(linux):
     toolchain = 'arm-xilinx-linux-gnueabi'
 
@@ -541,7 +550,7 @@ class zynq(linux):
         env.DEFINES.update(
             CONFIG_HAL_BOARD_SUBTYPE = 'HAL_BOARD_SUBTYPE_LINUX_ZYNQ',
         )
-
+#定义板子类型ocpoc_zynq
 class ocpoc_zynq(linux):
     toolchain = 'arm-linux-gnueabihf'
 
@@ -551,7 +560,7 @@ class ocpoc_zynq(linux):
         env.DEFINES.update(
             CONFIG_HAL_BOARD_SUBTYPE = 'HAL_BOARD_SUBTYPE_LINUX_OCPOC_ZYNQ',
         )
-
+#定义板子类型bbbmini
 class bbbmini(linux):
     toolchain = 'arm-linux-gnueabihf'
 
@@ -561,7 +570,7 @@ class bbbmini(linux):
         env.DEFINES.update(
             CONFIG_HAL_BOARD_SUBTYPE = 'HAL_BOARD_SUBTYPE_LINUX_BBBMINI',
         )
-
+#定义板子类型blue
 class blue(linux):
     toolchain = 'arm-linux-gnueabihf'
 
@@ -672,7 +681,8 @@ class rst_zynq(linux):
         env.DEFINES.update(
             CONFIG_HAL_BOARD_SUBTYPE = 'HAL_BOARD_SUBTYPE_LINUX_RST_ZYNQ',
         )
-        
+
+#定义px4板      
 class px4(Board):
     abstract = True
     toolchain = 'arm-none-eabi'
@@ -767,6 +777,7 @@ class px4(Board):
     def romfs_exclude(self, exclude):
         self.ROMFS_EXCLUDE += exclude
 
+#定义px4_v1板
 class px4_v1(px4):
     name = 'px4-v1'
     def __init__(self):
@@ -776,6 +787,7 @@ class px4_v1(px4):
         self.px4io_name = 'px4io-v1'
         self.romfs_exclude(['oreoled.bin'])
 
+#定义px4_v2板
 class px4_v2(px4):
     name = 'px4-v2'
     def __init__(self):
@@ -785,7 +797,7 @@ class px4_v2(px4):
         self.px4io_name = 'px4io-v2'
         self.romfs_exclude(['oreoled.bin'])
         self.with_uavcan = True
-
+#定义px4_v3板
 class px4_v3(px4):
     name = 'px4-v3'
     def __init__(self):
@@ -795,6 +807,7 @@ class px4_v3(px4):
         self.px4io_name = 'px4io-v2'
         self.with_uavcan = True
 
+#定义skyviper_v2450_px4板
 class skyviper_v2450_px4(px4_v3):
     name = 'skyviper-v2450-px4'
     def __init__(self):
@@ -819,6 +832,7 @@ class skyviper_v2450_px4(px4_v3):
         env.PX4_RC_S_SCRIPT = 'init.d/rcS_no_microSD'
         env.BUILD_ABIN = True
 
+#定义px4_v4板
 class px4_v4(px4):
     name = 'px4-v4'
     def __init__(self):
@@ -828,6 +842,19 @@ class px4_v4(px4):
         self.romfs_exclude(['oreoled.bin'])
         self.with_uavcan = True
 
+
+#定义px4_v5板，这个是自己添加
+class px4_v5(px4):
+    name = 'px4-v5'
+    def __init__(self):
+        super(px4_v5, self).__init__()
+        self.bootloader_name = 'px4fmuv5_bl.bin'
+        self.board_name = 'px4fmu-v5'
+        self.romfs_exclude(['oreoled.bin'])
+        self.with_uavcan = True
+#定义px4_v5板，这个是自己添加
+
+#定义px4_v4pro板，这个是自己添加
 class px4_v4pro(px4):
     name = 'px4-v4pro'
     def __init__(self):
@@ -847,3 +874,7 @@ class aerofc_v1(px4):
         self.romfs_exclude(['oreoled.bin'])
         self.board_rc = True
         self.param_defaults = '../../../Tools/Frame_params/intel-aero-rtf.param'
+
+
+
+

@@ -1,0 +1,32 @@
+执行waf-light文件
+('cwd=', '/home/coco/Desktop/test4/ardupilot-lxw')
+('VERSION=', '2.0.9')
+执行waf-light文件
+('wafdir=', '/home/coco/Desktop/test4/ardupilot-lxw/modules/waf')
+运行编译waf的waflib的Scriping.py
+运行编译waf的waflib的Scriping.py
+运行编译waf的waflib的Scriping.py结束
+('Scripting=', <module 'waflib.Scripting' from '/home/coco/Desktop/test4/ardupilot-lxw/modules/waf/waflib/Scripting.pyc'>)
+('Scripting.waf_entry_point=', <function waf_entry_point at 0x7f865265ce60>)
+运行调用waf的waflib的waf_entry_point函数
+运行调用waf的waflib的Log.py
+运行调用waf的waflib的waf_entry_point函数lst
+ardupilot开始编译
+ardupilot开始编译根目录wscript
+ardupilot开始编译ardupilotwaf
+ardupilotwaf= <module 'ardupilotwaf' from 'Tools/ardupilotwaf/ardupilotwaf.pyc'>
+ardupilot开始编译board
+boards= <module 'boards' from 'Tools/ardupilotwaf/boards.pyc'>
+('Context.run_dir=', '/home/coco/Desktop/test4/ardupilot-lxw')
+('Context.WSCRIPT_FILE=', 'wscript')
+运行调用waf的waflib的waf_entry_point函数try set_main_module
+运行测试
+***************************
+为啥我会显示到ubuntu界面上？我在哪里执行的？欢迎分析我
+***************************
+++++++++++
+p= <module 'posixpath' from '/usr/lib/python2.7/posixpath.pyc'>
+++++++++++
+d= /home/coco/Desktop/test4/ardupilot-lxw
+waf_light= /home/coco/Desktop/test4/ardupilot-lxw/modules/waf/waf-light
+python= /usr/bin/python

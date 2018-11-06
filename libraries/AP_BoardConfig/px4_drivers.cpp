@@ -172,14 +172,22 @@ void AP_BoardConfig::px4_tone_alarm(const char *tone_string)
     px4_start_driver(tone_alarm_main, "tone_alarm", tone_string);
 }
 
-/*
-  setup px4io, possibly updating firmware
- */
+
+/***********************************************************************************************************************
+*函数原型：void AP_BoardConfig::px4_setup_px4io(void)
+*函数功能：设置PX4IO，可能更新固件
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：setup px4io, possibly updating firmware
+*************************************************************************************************************************/
+
 void AP_BoardConfig::px4_setup_px4io(void)
 {
-    if (px4_start_driver(px4io_main, "px4io", "start norc")) {
+    if (px4_start_driver(px4io_main, "px4io", "start norc"))
+    {
         printf("px4io started OK\n");
-    } else {
+    } else
+    {
         // might be in bootloader mode if user held down safety switch
         // at power on
         printf("Loading /etc/px4io/px4io.bin\n");
@@ -189,17 +197,21 @@ void AP_BoardConfig::px4_setup_px4io(void)
         // uartC reada
         hal.uartC->end();
 #endif
-        if (px4_start_driver(px4io_main, "px4io", "update /etc/px4io/px4io.bin")) {
+        if (px4_start_driver(px4io_main, "px4io", "update /etc/px4io/px4io.bin"))
+        {
             printf("upgraded PX4IO firmware OK\n");
             px4_tone_alarm("MSPAA");
-        } else {
+        } else
+        {
             printf("Failed to upgrade PX4IO firmware\n");
             px4_tone_alarm("MNGGG");
         }
         hal.scheduler->delay(1000);
-        if (px4_start_driver(px4io_main, "px4io", "start norc")) {
+        if (px4_start_driver(px4io_main, "px4io", "start norc"))
+        {
             printf("px4io started OK\n");
-        } else {
+        } else
+        {
             sensor_config_error("px4io start failed");
         }
     }
@@ -240,21 +252,29 @@ void AP_BoardConfig::px4_setup_px4io(void)
     }
 }
 
-/*
-  setup required peripherals like adc, rcinput and rcoutput
- */
+/***********************************************************************************************************************
+*函数原型：void AP_BoardConfig::px4_setup_peripherals(void)
+*函数功能：设置外围设备和驱动程序
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：setup required peripherals like adc, rcinput and rcoutput
+*************************************************************************************************************************/
+
 void AP_BoardConfig::px4_setup_peripherals(void)
 {
     // always start adc
-    if (px4_start_driver(adc_main, "adc", "start")) {
+    if (px4_start_driver(adc_main, "adc", "start"))
+    {
         hal.analogin->init();
         printf("ADC started OK\n");
-    } else {
+    } else
+    {
         sensor_config_error("no ADC found");
     }
 
 #if HAL_PX4_HAVE_PX4IO
-    if (state.io_enable.get() != 0) {
+    if (state.io_enable.get() != 0)
+    {
         px4_setup_px4io();
     }
 #endif

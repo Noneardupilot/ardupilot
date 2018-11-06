@@ -487,6 +487,7 @@ is bob we will attempt to checkout bob-AVR'''
     def common_boards(self):
         '''returns list of boards common to all vehicles'''
         # note that while we do not use these for AntennaTracker!
+        print("*********common_boards*****")
         return ["fmuv2",
                 "fmuv3",
                 "fmuv4",

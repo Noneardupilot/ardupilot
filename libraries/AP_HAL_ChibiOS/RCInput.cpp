@@ -30,10 +30,19 @@ extern AP_IOMCU iomcu;
 #define SIG_DETECT_TIMEOUT_US 500000
 using namespace ChibiOS;
 extern const AP_HAL::HAL& hal;
+
+
+/***********************************************************************************************************************
+*函数原型：void RCInput::init()
+*函数功能：固件初始化
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void RCInput::init()
 {
 #if HAL_USE_ICU == TRUE
-    //attach timer channel on which the signal will be received
+    //附加接收信号的定时器通道。-----attach timer channel on which the signal will be received
     sig_reader.attach_capture_timer(&RCIN_ICU_TIMER, RCIN_ICU_CHANNEL, STM32_RCIN_DMA_STREAM, STM32_RCIN_DMA_CHANNEL);
     rcin_prot.init();
 #endif
@@ -45,6 +54,15 @@ void RCInput::init()
 
     _init = true;
 }
+
+
+/***********************************************************************************************************************
+*函数原型：void RCInput::init()
+*函数功能：固件初始化
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 
 bool RCInput::new_input()
 {

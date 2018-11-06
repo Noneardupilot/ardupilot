@@ -60,9 +60,16 @@
 
 extern const AP_HAL::HAL &hal;
 
-/*
-  upload a firmware to the IOMCU
- */
+
+/***********************************************************************************************************************
+*函数原型：bool AP_IOMCU::upload_fw(void)
+*函数功能：upload a firmware to the IOMCU
+*修改日期：2018-11-6
+*修改作者：cihang_uav
+*备注信息：更新固件
+*************************************************************************************************************************/
+
+
 bool AP_IOMCU::upload_fw(void)
 {
     // set baudrate for bootloader
