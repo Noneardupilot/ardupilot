@@ -195,20 +195,17 @@ void AP_Notify::add_backend_helper(NotifyDevice *backend)
 // add notify backends to _devices array
 void AP_Notify::add_backends(void)
 {
-    if (_num_devices != 0)
-    {
+    if (_num_devices != 0) {
         return;
     }
-   ADD_BACKEND(new ToshibaLED_I2C(TOSHIBA_LED_I2C_BUS_EXTERNAL));
+
     for (uint32_t i = 1; i < Notify_LED_MAX; i = i << 1)
     {
-//    	hal.uartG->printf("i=%d\r\n",i);
-//    	hal.uartG->printf("_led_type=%d\r\n",_led_type);
         switch(_led_type & i)
         {
-           case Notify_LED_None:
+            case Notify_LED_None:
                 break;
-           case Notify_LED_Board:
+            case Notify_LED_Board:
                 // select the most appropriate built in LED driver type
 #if CONFIG_HAL_BOARD == HAL_BOARD_LINUX
   #if CONFIG_HAL_BOARD_SUBTYPE == HAL_BOARD_SUBTYPE_LINUX_NAVIO2
@@ -242,10 +239,10 @@ void AP_Notify::add_backends(void)
                 ADD_BACKEND(new ToshibaLED_I2C(TOSHIBA_LED_I2C_BUS_INTERNAL));
                 break;
             case Notify_LED_ToshibaLED_I2C_External:
-            	hal.uartG->printf("CCC\r\n");
                 ADD_BACKEND(new ToshibaLED_I2C(TOSHIBA_LED_I2C_BUS_EXTERNAL));
-               hal.uartG->printf("DDD\r\n");
                 break;
+
+
 #if !HAL_MINIMIZE_FEATURES
             case Notify_LED_NCP5623_I2C_External:
                 FOREACH_I2C_EXTERNAL(b) {
@@ -285,7 +282,7 @@ void AP_Notify::add_backends(void)
     CONFIG_HAL_BOARD == HAL_BOARD_VRBRAIN
     ADD_BACKEND(new AP_ToneAlarm());
 
-//// ChibiOS noise makers
+// ChibiOS noise makers
 #elif CONFIG_HAL_BOARD == HAL_BOARD_CHIBIOS
 #ifdef HAL_BUZZER_PIN
     ADD_BACKEND(new Buzzer());
@@ -313,7 +310,7 @@ void AP_Notify::add_backends(void)
     ADD_BACKEND(new AP_ToneAlarm());
   #endif
 
-//// F4Light noise makers
+// F4Light noise makers
 #elif CONFIG_HAL_BOARD == HAL_BOARD_F4LIGHT
     ADD_BACKEND(new Buzzer());
 #endif // Noise makers

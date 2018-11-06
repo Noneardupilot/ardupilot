@@ -194,68 +194,103 @@ void AP_IOMCU_FW::update()
     if (now != last_loop_ms)
     {
         last_loop_ms = now;
-        heater_update();
-        rcin_update();
-        safety_update();
-        rcout_mode_update();
+        heater_update(); //更新心跳包，指示led
+        rcin_update();   //遥控器输入更新
+        safety_update(); //安全开关更新
+        rcout_mode_update(); //电机输出模式更新
         hal.rcout->timer_tick();
     }
 }
 
-
-
-
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU_FW::pwm_out_update()
+*函数功能：pwm输出更新
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 
 void AP_IOMCU_FW::pwm_out_update()
 {
     //TODO: PWM mixing
     memcpy(reg_servo.pwm, reg_direct_pwm.pwm, sizeof(reg_direct_pwm));
     hal.rcout->cork();
-    for (uint8_t i = 0; i < SERVO_COUNT; i++) {
-        if (reg_servo.pwm[i] != 0) {
+    for (uint8_t i = 0; i < SERVO_COUNT; i++)
+    {
+        if (reg_servo.pwm[i] != 0)
+        {
             hal.rcout->write(i, reg_status.flag_safety_off?reg_servo.pwm[i]:0);
         }
     }
     hal.rcout->push();
 }
 
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU_FW::heater_update()
+*函数功能：心跳输出更新
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
+
 void AP_IOMCU_FW::heater_update()
 {
     uint32_t now = AP_HAL::millis();
-    if (!has_heater) {
+    if (!has_heater)
+    {
         // use blue LED as heartbeat
-        if (now - last_blue_led_ms > 500) {
+        if (now - last_blue_led_ms > 500)
+        {
             palToggleLine(HAL_GPIO_PIN_HEATER);
             last_blue_led_ms = now;
         }
-    } else if (reg_setup.heater_duty_cycle == 0 || (now - last_heater_ms > 3000UL)) {
+    } else if (reg_setup.heater_duty_cycle == 0 || (now - last_heater_ms > 3000UL))
+    {
         palWriteLine(HAL_GPIO_PIN_HEATER, 0);
-    } else {
+    } else
+    {
         uint8_t cycle = ((now / 10UL) % 100U);
         palWriteLine(HAL_GPIO_PIN_HEATER, !(cycle >= reg_setup.heater_duty_cycle));
     }
 }
-
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU_FW::rcin_update()
+*函数功能：遥控输入更新
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_IOMCU_FW::rcin_update()
 {
-    if (hal.rcin->new_input()) {
+    if (hal.rcin->new_input())
+    {
         rc_input.count = hal.rcin->num_channels();
         rc_input.flags_rc_ok = true;
-        for (uint8_t i = 0; i < IOMCU_MAX_CHANNELS; i++) {
+        for (uint8_t i = 0; i < IOMCU_MAX_CHANNELS; i++)
+        {
             rc_input.pwm[i] = hal.rcin->read(i);
         }
         rc_input.last_input_us = AP_HAL::micros();
     }
-    if (update_rcout_freq) {
+    if (update_rcout_freq)
+    {
         hal.rcout->set_freq(reg_setup.pwm_rates, reg_setup.pwm_altrate);
         update_rcout_freq = false;
     }
-    if (update_default_rate) {
+    if (update_default_rate)
+    {
         hal.rcout->set_default_rate(reg_setup.pwm_defaultrate);
     }
 
 }
 
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU_FW::pwm_out_update()
+*函数功能：pwm输出更新
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_IOMCU_FW::process_io_packet()
 {
     uint8_t rx_crc = rx_io_packet.crc;
@@ -300,6 +335,13 @@ void AP_IOMCU_FW::process_io_packet()
     }
 }
 
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU_FW::pwm_out_update()
+*函数功能：pwm输出更新
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 bool AP_IOMCU_FW::handle_code_read()
 {
     uint16_t *values = nullptr;
@@ -341,7 +383,13 @@ bool AP_IOMCU_FW::handle_code_read()
     tx_io_packet.crc =  crc_crc8((const uint8_t *)&tx_io_packet, tx_io_packet.get_size());
     return true;
 }
-
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU_FW::pwm_out_update()
+*函数功能：pwm输出更新
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 bool AP_IOMCU_FW::handle_code_write()
 {
     switch (rx_io_packet.page) {
@@ -448,13 +496,25 @@ bool AP_IOMCU_FW::handle_code_write()
     tx_io_packet.crc =  crc_crc8((const uint8_t *)&tx_io_packet, tx_io_packet.get_size());
     return true;
 }
-
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU_FW::pwm_out_update()
+*函数功能：pwm输出更新
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_IOMCU_FW::schedule_reboot(uint32_t time_ms)
 {
     do_reboot = true;
     reboot_time = AP_HAL::millis() + time_ms;
 }
-
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU_FW::pwm_out_update()
+*函数功能：pwm输出更新
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_IOMCU_FW::calculate_fw_crc(void)
 {
 #define APP_SIZE_MAX 0xf000
@@ -471,33 +531,44 @@ void AP_IOMCU_FW::calculate_fw_crc(void)
     reg_setup.crc[1] = sum >> 16;
 }
 
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU_FW::safety_update(void)
+*函数功能：更新安全状态
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：update safety state
+*************************************************************************************************************************/
 
-/*
-  update safety state
- */
 void AP_IOMCU_FW::safety_update(void)
 {
     uint32_t now = AP_HAL::millis();
-    if (now - safety_update_ms < 100) {
+    if (now - safety_update_ms < 100)
+    {
         // update safety at 10Hz
         return;
     }
     safety_update_ms = now;
 
     bool safety_pressed = palReadLine(HAL_GPIO_PIN_SAFETY_INPUT);
-    if (safety_pressed) {
-        if (reg_status.flag_safety_off && (reg_setup.arming & P_SETUP_ARMING_SAFETY_DISABLE_ON)) {
+    if (safety_pressed)
+    {
+        if (reg_status.flag_safety_off && (reg_setup.arming & P_SETUP_ARMING_SAFETY_DISABLE_ON))
+        {
             safety_pressed = false;
-        } else if ((!reg_status.flag_safety_off) && (reg_setup.arming & P_SETUP_ARMING_SAFETY_DISABLE_OFF)) {
+        } else if ((!reg_status.flag_safety_off) && (reg_setup.arming & P_SETUP_ARMING_SAFETY_DISABLE_OFF))
+        {
             safety_pressed = false;
         }
     }
-    if (safety_pressed) {
+    if (safety_pressed)
+    {
         safety_button_counter++;
-    } else {
+    } else
+    {
         safety_button_counter = 0;
     }
-    if (safety_button_counter == 10) {
+    if (safety_button_counter == 10)
+    {
         // safety has been pressed for 1 second, change state
         reg_status.flag_safety_off = !reg_status.flag_safety_off;
     }
@@ -507,20 +578,28 @@ void AP_IOMCU_FW::safety_update(void)
     palWriteLine(HAL_GPIO_PIN_SAFETY_LED, (led_pattern & (1U << led_counter))?0:1);
 }
 
-/*
-  update hal.rcout mode if needed
- */
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU_FW::rcout_mode_update(void)
+*函数功能：pwm输出更新
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：update hal.rcout mode if needed
+*************************************************************************************************************************/
+
 void AP_IOMCU_FW::rcout_mode_update(void)
 {
     bool use_oneshot = (reg_setup.features & P_SETUP_FEATURES_ONESHOT) != 0;
-    if (use_oneshot && !oneshot_enabled) {
+    if (use_oneshot && !oneshot_enabled)
+    {
         oneshot_enabled = true;
         hal.rcout->set_output_mode(reg_setup.pwm_rates, AP_HAL::RCOutput::MODE_PWM_ONESHOT);
     }
     bool use_brushed = (reg_setup.features & P_SETUP_FEATURES_BRUSHED) != 0;
-    if (use_brushed && !brushed_enabled) {
+    if (use_brushed && !brushed_enabled)
+    {
         brushed_enabled = true;
-        if (reg_setup.pwm_rates == 0) {
+        if (reg_setup.pwm_rates == 0)
+        {
             // default to 2kHz for all channels for brushed output
             reg_setup.pwm_rates = 0xFF;
             reg_setup.pwm_altrate = 2000;
