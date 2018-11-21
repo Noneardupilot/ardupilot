@@ -1,25 +1,25 @@
 #!/usr/bin/python
 
 from __future__ import print_function
-print("++++++++++")
+#print("++++++++++")
 import subprocess
 import os.path as p 
-print("p=",p)  # p= <module 'posixpath' from '/usr/lib/python2.7/posixpath.pyc'>
+#print("p=",p)  # p= <module 'posixpath' from '/usr/lib/python2.7/posixpath.pyc'>
 import sys
-print("++++++++++")
+#print("++++++++++")
 d = p.dirname(p.realpath(__file__)) # d= /home/coco/Desktop/test4/ardupilot-lxw
 print("d=",d)
 waf_light = p.join(d, 'modules', 'waf', 'waf-light') #/home/coco/Desktop/test4/ardupilot-lxw/modules/waf/waf-light
-print("waf_light=",waf_light) 
+#print("waf_light=",waf_light) 
 
 python = sys.executable     #python= /usr/bin/pythonPython lujing
-print("python=",python)
+#print("python=",python)
 try:
     subprocess.check_call([python, waf_light] + sys.argv[1:]) #sys.argv[1:]= ['configure', '--board', 'fmuv5']
     
-    print("sys.argv[1:]=",sys.argv[1:]) 
-    print("subprocess.check_call=",subprocess.check_call) 
-    print("subprocess=",subprocess) # subprocess= <module 'subprocess' from '/usr/lib/python2.7/subprocess.pyc'>
+    #print("sys.argv[1:]=",sys.argv[1:]) 
+    #print("subprocess.check_call=",subprocess.check_call) 
+    #print("subprocess=",subprocess) # subprocess= <module 'subprocess' from '/usr/lib/python2.7/subprocess.pyc'>
     
 except subprocess.CalledProcessError as e:
     if e.returncode != 2 or p.isfile(waf_light):

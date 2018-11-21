@@ -1,5 +1,5 @@
 /*
-  common protocol definitions between AP_IOMCU and iofirmware
+  AP——IOMCU和iofirmware如何进行通信的协议：共同的协议----common protocol definitions between AP_IOMCU and iofirmware
  */
 
 #define PKT_MAX_REGS 32
@@ -7,15 +7,16 @@
 
 //#define IOMCU_DEBUG
 
-struct PACKED IOPacket {
-    uint8_t 	count:6;
-    uint8_t 	code:2;
-    uint8_t 	crc;
-    uint8_t 	page;
-    uint8_t 	offset;
+struct PACKED IOPacket
+{
+    uint8_t 	count:6;  //计数
+    uint8_t 	code:2;   //代码
+    uint8_t 	crc;      //校验
+    uint8_t 	page;     //页
+    uint8_t 	offset;   //偏移
     uint16_t	regs[PKT_MAX_REGS];
 
-    // get packet size in bytes
+    //以字节为单位获取数据包大小------ get packet size in bytes
     uint8_t get_size(void) const
     {
         return count*2 + 4;
@@ -23,7 +24,7 @@ struct PACKED IOPacket {
 };
 
 /*
-  values for pkt.code
+  PKT代码的值---values for pkt.code
  */
 enum iocode {
     // read types
@@ -36,7 +37,7 @@ enum iocode {
     CODE_ERROR = 2
 };
 
-// IO pages
+//输入输出页--------- IO pages
 enum iopage {
     PAGE_CONFIG = 0,
     PAGE_STATUS = 1,
@@ -47,12 +48,12 @@ enum iopage {
     PAGE_RAW_ADC = 6,
     PAGE_PWM_INFO = 7,
     PAGE_SETUP = 50,
-    PAGE_DIRECT_PWM = 54,
+    PAGE_DIRECT_PWM = 54,  //PWM
     PAGE_FAILSAFE_PWM = 55,
     PAGE_DISARMED_PWM = 108,
 };
 
-// setup page registers
+//设置页面寄存器---- setup page registers
 #define PAGE_REG_SETUP_FEATURES	0
 #define P_SETUP_FEATURES_SBUS1_OUT	1
 #define P_SETUP_FEATURES_SBUS2_OUT	2

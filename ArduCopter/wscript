@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
-print("运行arducopter中的script")
+#print("运行arducopter中的script")
 def build(bld):
     vehicle = bld.path.name
     bld.ap_stlib(

@@ -53,10 +53,9 @@ struct RCOutput::irq_state RCOutput::irq;
 *修改作者：cihang_uav
 *备注信息：initialise RC output driver
 *************************************************************************************************************************/
-
 void RCOutput::init()
 {
-    uint8_t pwm_count = AP_BoardConfig::get_pwm_count();
+    uint8_t pwm_count = AP_BoardConfig::get_pwm_count();  //获取FMU上启用的PWM输出数
     for (uint8_t i = 0; i < NUM_GROUPS; i++ )
     {
         //Start Pwm groups
@@ -65,24 +64,28 @@ void RCOutput::init()
         for (uint8_t j = 0; j < 4; j++ )
         {
             uint8_t chan = group.chan[j];
-            if (chan >= pwm_count) {
+            if (chan >= pwm_count)
+            {
                 group.chan[j] = CHAN_DISABLED;
             }
-            if (group.chan[j] != CHAN_DISABLED) {
+            if (group.chan[j] != CHAN_DISABLED)
+            {
                 num_fmu_channels = MAX(num_fmu_channels, group.chan[j]+1);
                 group.ch_mask |= (1U<<group.chan[j]);
             }
         }
-        if (group.ch_mask != 0) {
+        if (group.ch_mask != 0)
+        {
             pwmStart(group.pwm_drv, &group.pwm_cfg);
             group.pwm_started = true;
         }
         chVTObjectInit(&group.dma_timeout);
     }
 
-#if HAL_WITH_IO_MCU
+#if HAL_WITH_IO_MCU          //FMU
     if (AP_BoardConfig::io_enabled())
     {
+
         iomcu.init();
         // with IOMCU the local (FMU) channels start at 8
         chan_offset = 8;
@@ -98,12 +101,18 @@ void RCOutput::init()
 #endif
 }
 
-/*
-  setup the output frequency for a group and start pwm output
- */
+/***********************************************************************************************************************
+*函数原型：void RCOutput::set_freq_group(pwm_group &group)
+*函数功能：为组设置输出频率并启动PWM输出
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：setup the output frequency for a group and start pwm output
+*************************************************************************************************************************/
+
 void RCOutput::set_freq_group(pwm_group &group)
 {
-    if (mode_requires_dma(group.current_mode)) {
+    if (mode_requires_dma(group.current_mode))
+    {
         // speed setup in DMA handler
         return;
     }
@@ -112,12 +121,14 @@ void RCOutput::set_freq_group(pwm_group &group)
     uint32_t old_clock = group.pwm_cfg.frequency;
     uint32_t old_period = group.pwm_cfg.period;
 
-    if (freq_set > 400 || group.current_mode == MODE_PWM_ONESHOT125) {
+    if (freq_set > 400 || group.current_mode == MODE_PWM_ONESHOT125)
+    {
         // use a 8MHz clock for higher frequencies or for
         // oneshot125. Using 8MHz for oneshot125 results in the full
         // 1000 steps for smooth output
         group.pwm_cfg.frequency = 8000000;
-    } else if (freq_set <= 400) {
+    } else if (freq_set <= 400)
+    {
         // use a 1MHz clock
         group.pwm_cfg.frequency = 1000000;
     }
@@ -143,8 +154,10 @@ void RCOutput::set_freq_group(pwm_group &group)
     }
     
     bool force_reconfig = false;
-    for (uint8_t j=0; j<4; j++) {
-        if (group.pwm_cfg.channels[j].mode == PWM_OUTPUT_ACTIVE_LOW) {
+    for (uint8_t j=0; j<4; j++)
+    {
+        if (group.pwm_cfg.channels[j].mode == PWM_OUTPUT_ACTIVE_LOW)
+        {
             group.pwm_cfg.channels[j].mode = PWM_OUTPUT_ACTIVE_HIGH;
             force_reconfig = true;
         }
@@ -168,10 +181,14 @@ void RCOutput::set_freq_group(pwm_group &group)
     }
     pwmChangePeriod(group.pwm_drv, group.pwm_cfg.period);
 }
+/***********************************************************************************************************************
+*函数原型：void RCOutput::set_freq(uint32_t chmask, uint16_t freq_hz)
+*函数功能：为一组由掩模给出的通道设置输出频率
+*修改日期：2018-11-7
+*修改作者：cihang_uav
+*备注信息：set output frequency in HZ for a set of channels given by a mask
+*************************************************************************************************************************/
 
-/*
-  set output frequency in HZ for a set of channels given by a mask
- */
 void RCOutput::set_freq(uint32_t chmask, uint16_t freq_hz)
 {
     //check if the request spans accross any of the channel groups
@@ -224,19 +241,27 @@ void RCOutput::set_freq(uint32_t chmask, uint16_t freq_hz)
     }
 }
 
-/*
-  set default output rate
- */
+/***********************************************************************************************************************
+*函数原型：void RCOutput::set_default_rate(uint16_t freq_hz)
+*函数功能：设置默认波特率
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：set default output rate
+*************************************************************************************************************************/
+
 void RCOutput::set_default_rate(uint16_t freq_hz)
 {
 #if HAL_WITH_IO_MCU
-    if (AP_BoardConfig::io_enabled()) {
+    if (AP_BoardConfig::io_enabled())
+    {
         iomcu.set_default_rate(freq_hz);
     }
 #endif
-    for (uint8_t i = 0; i < NUM_GROUPS; i++ ) {
+    for (uint8_t i = 0; i < NUM_GROUPS; i++ )
+    {
         pwm_group &group = pwm_group_list[i];
-        if ((group.ch_mask & fast_channel_mask) || group.ch_mask == 0) {
+        if ((group.ch_mask & fast_channel_mask) || group.ch_mask == 0)
+        {
             // don't change fast channels
             continue;
         }
@@ -247,6 +272,13 @@ void RCOutput::set_default_rate(uint16_t freq_hz)
     }
 }
 
+/***********************************************************************************************************************
+*函数原型：uint16_t RCOutput::get_freq(uint8_t chan)
+*函数功能：获取更新频率
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 uint16_t RCOutput::get_freq(uint8_t chan)
 {
     if (chan >= max_channels) {
@@ -259,10 +291,13 @@ uint16_t RCOutput::get_freq(uint8_t chan)
 #endif
     chan -= chan_offset;
 
-    for (uint8_t i = 0; i < NUM_GROUPS; i++ ) {
+    for (uint8_t i = 0; i < NUM_GROUPS; i++ )
+    {
         pwm_group &group = pwm_group_list[i];
-        for (uint8_t j = 0; j < 4; j++) {
-            if (group.chan[j] == chan) {
+        for (uint8_t j = 0; j < 4; j++)
+        {
+            if (group.chan[j] == chan)
+            {
                 return group.pwm_drv->config->frequency / group.pwm_drv->period;
             }
         }
@@ -270,7 +305,13 @@ uint16_t RCOutput::get_freq(uint8_t chan)
     // assume 50Hz default
     return 50;
 }
-
+/***********************************************************************************************************************
+*函数原型：void RCOutput::enable_ch(uint8_t chan)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void RCOutput::enable_ch(uint8_t chan)
 {
     if (chan >= max_channels) {
@@ -290,7 +331,13 @@ void RCOutput::enable_ch(uint8_t chan)
         }
     }
 }
-
+/***********************************************************************************************************************
+*函数原型：void RCOutput::disable_ch(uint8_t chan)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 void RCOutput::disable_ch(uint8_t chan)
 {
     if (chan >= max_channels) {
@@ -311,7 +358,13 @@ void RCOutput::disable_ch(uint8_t chan)
         }
     }
 }
-
+/***********************************************************************************************************************
+*函数原型：void RCOutput::write(uint8_t chan, uint16_t period_us)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 void RCOutput::write(uint8_t chan, uint16_t period_us)
 {
     if (chan >= max_channels) {
@@ -319,11 +372,14 @@ void RCOutput::write(uint8_t chan, uint16_t period_us)
     }
     last_sent[chan] = period_us;
 
-#if HAL_WITH_IO_MCU
+#if HAL_WITH_IO_MCU  //FMU使用
+
     // handle IO MCU channels
-    if (AP_BoardConfig::io_enabled()) {
+    if (AP_BoardConfig::io_enabled())
+    {
         uint16_t io_period_us = period_us;
-        if (iomcu_oneshot125 && ((1U<<chan) & io_fast_channel_mask)) {
+        if (iomcu_oneshot125 && ((1U<<chan) & io_fast_channel_mask))
+        {
             // the iomcu only has one oneshot setting, so we need to scale by a factor
             // of 8 here for oneshot125
             io_period_us /= 8;
@@ -331,11 +387,14 @@ void RCOutput::write(uint8_t chan, uint16_t period_us)
         iomcu.write_channel(chan, io_period_us);
     }
 #endif
-    if (chan < chan_offset) {
+    if (chan < chan_offset)
+    {
         return;
     }
-    
-    if (safety_state == AP_HAL::Util::SAFETY_DISARMED && !(safety_mask & (1U<<chan))) {
+
+    if (safety_state == AP_HAL::Util::SAFETY_DISARMED && !(safety_mask & (1U<<chan)))
+    {
+
         // implement safety pwm value
         period_us = safe_pwm[chan];
     }
@@ -344,20 +403,27 @@ void RCOutput::write(uint8_t chan, uint16_t period_us)
 
     period[chan] = period_us;
 
-    if (chan < num_fmu_channels) {
+    if (chan < num_fmu_channels)
+    {
         active_fmu_channels = MAX(chan+1, active_fmu_channels);
-        if (!corked) {
+        if (!corked)
+        {
             push_local();
         }
     }
 }
+/***********************************************************************************************************************
+*函数原型：void RCOutput::push_local(void)
+*函数功能：把值发出去
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：push values to local channels from period[] array
+*************************************************************************************************************************/
 
-/*
-  push values to local channels from period[] array
- */
 void RCOutput::push_local(void)
 {
-    if (active_fmu_channels == 0) {
+    if (active_fmu_channels == 0)
+    {
         return;
     }
     uint16_t outmask = (1U<<active_fmu_channels)-1;
@@ -375,12 +441,14 @@ void RCOutput::push_local(void)
         if (!group.pwm_started) {
             continue;
         }
-        for (uint8_t j = 0; j < 4; j++) {
+        for (uint8_t j = 0; j < 4; j++)
+        {
             uint8_t chan = group.chan[j];
             if (chan == CHAN_DISABLED) {
                 continue;
             }
-            if (outmask & (1UL<<chan)) {
+            if (outmask & (1UL<<chan))
+            {
                 uint32_t period_us = period[chan];
 
                 if (safety_on && !(safety_mask & (1U<<(chan+chan_offset)))) {
@@ -408,12 +476,14 @@ void RCOutput::push_local(void)
                     pwmEnableChannel(group.pwm_drv, j, width);
                 }
 #ifndef DISABLE_DSHOT 
-                else if (group.current_mode >= MODE_PWM_DSHOT150 && group.current_mode <= MODE_PWM_DSHOT1200) {
+                else if (group.current_mode >= MODE_PWM_DSHOT150 && group.current_mode <= MODE_PWM_DSHOT1200)
+                {
                     // set period_us to time for pulse output, to enable very fast rates
                     period_us = dshot_pulse_time_us;
                 }
 #endif //#ifndef DISABLE_DSHOT
-                if (period_us > widest_pulse) {
+                if (period_us > widest_pulse)
+                {
                     widest_pulse = period_us;
                 }
                 if (group.current_mode == MODE_PWM_ONESHOT ||
@@ -433,25 +503,40 @@ void RCOutput::push_local(void)
 
     trigger_groupmask = need_trigger;
 
-    if (trigger_groupmask) {
+    if (trigger_groupmask)
+    {
         trigger_groups();
     }
 }
-
+/***********************************************************************************************************************
+*函数原型：uint16_t RCOutput::read(uint8_t chan)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 uint16_t RCOutput::read(uint8_t chan)
 {
     if (chan >= max_channels) {
         return 0;
     }
-#if HAL_WITH_IO_MCU
-    if (chan < chan_offset) {
+#if HAL_WITH_IO_MCU  //fmu使用
+
+    if (chan < chan_offset)
+    {
         return iomcu.read_channel(chan);
     }
 #endif
     chan -= chan_offset;
     return period[chan];
 }
-
+/***********************************************************************************************************************
+*函数原型：void RCOutput::read(uint16_t* period_us, uint8_t len)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 void RCOutput::read(uint16_t* period_us, uint8_t len)
 {
     if (len > max_channels) {
@@ -470,7 +555,13 @@ void RCOutput::read(uint16_t* period_us, uint8_t len)
 
     memcpy(period_us, period, len*sizeof(uint16_t));
 }
-
+/***********************************************************************************************************************
+*函数原型：uint16_t RCOutput::read_last_sent(uint8_t chan)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 uint16_t RCOutput::read_last_sent(uint8_t chan)
 {
     if (chan >= max_channels) {
@@ -479,6 +570,13 @@ uint16_t RCOutput::read_last_sent(uint8_t chan)
     return last_sent[chan];
 }
 
+/***********************************************************************************************************************
+*函数原型：void RCOutput::read_last_sent(uint16_t* period_us, uint8_t len)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void RCOutput::read_last_sent(uint16_t* period_us, uint8_t len)
 {
     if (len > max_channels) {
@@ -488,10 +586,14 @@ void RCOutput::read_last_sent(uint16_t* period_us, uint8_t len)
         period_us[i] = read_last_sent(i);
     }
 }
+/***********************************************************************************************************************
+*函数原型：bool RCOutput::mode_requires_dma(enum output_mode mode) const
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：does an output mode require the use of the UP DMA channel?
+*************************************************************************************************************************/
 
-/*
-  does an output mode require the use of the UP DMA channel?
- */
 bool RCOutput::mode_requires_dma(enum output_mode mode) const
 {
 #ifndef DISABLE_DSHOT
@@ -507,7 +609,13 @@ bool RCOutput::mode_requires_dma(enum output_mode mode) const
 #endif //#ifndef DISABLE_DSHOT
     return false;
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   setup a group for DMA output at a given bitrate. The bit_width is
   the value for a pulse width in the DMA buffer for a full bit.
@@ -589,7 +697,13 @@ bool RCOutput::setup_group_DMA(pwm_group &group, uint32_t bitrate, uint32_t bit_
 #endif //#ifndef DISABLE_DSHOT
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   setup output mode for a group, using group.current_mode. Used to restore output 
   after serial operations
@@ -658,10 +772,14 @@ void RCOutput::set_group_mode(pwm_group &group)
         }
     }
 }
+/***********************************************************************************************************************
+*函数原型：void RCOutput::set_output_mode(uint16_t mask, enum output_mode mode)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息： setup output mode
+*************************************************************************************************************************/
 
-/*
-  setup output mode
- */
 void RCOutput::set_output_mode(uint16_t mask, enum output_mode mode)
 {
     for (uint8_t i = 0; i < NUM_GROUPS; i++ ) {
@@ -694,9 +812,15 @@ void RCOutput::set_output_mode(uint16_t mask, enum output_mode mode)
     }
 #endif
 }
-
+/***********************************************************************************************************************
+*函数原型：void RCOutput::cork(void)
+*函数功能：起动阻塞输出
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：start corking output
+*************************************************************************************************************************/
 /*
-  start corking output
+
  */
 void RCOutput::cork(void)
 {
@@ -707,21 +831,32 @@ void RCOutput::cork(void)
     }
 #endif
 }
+/***********************************************************************************************************************
+*函数原型：void RCOutput::push(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：stop corking output
+*************************************************************************************************************************/
 
-/*
-  stop corking output
- */
 void RCOutput::push(void)
 {
     corked = false;
     push_local();
 #if HAL_WITH_IO_MCU
-    if (AP_BoardConfig::io_enabled()) {
+    if (AP_BoardConfig::io_enabled())
+    {
         iomcu.push();
     }
 #endif
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   enable sbus output
  */
@@ -734,7 +869,13 @@ bool RCOutput::enable_px4io_sbus_out(uint16_t rate_hz)
 #endif
     return false;
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   trigger output groups for oneshot or dshot modes
  */
@@ -827,7 +968,13 @@ void RCOutput::timer_tick(void)
 }
 
 
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   allocate DMA channel
  */
@@ -840,7 +987,13 @@ void RCOutput::dma_allocate(Shared_DMA *ctx)
         }
     }
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   deallocate DMA channel
  */
@@ -853,7 +1006,13 @@ void RCOutput::dma_deallocate(Shared_DMA *ctx)
         }
     }
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   create a DSHOT 16 bit packet. Based on prepareDshotPacket from betaflight
  */
@@ -878,7 +1037,13 @@ uint16_t RCOutput::create_dshot_packet(const uint16_t value, bool telem_request)
 
     return packet;
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   fill in a DMA buffer for dshot
  */
@@ -898,7 +1063,13 @@ void RCOutput::fill_DMA_buffer_dshot(uint32_t *buffer, uint8_t stride, uint16_t 
         buffer[i * stride] = 0;
     }
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   send a set of DShot packets for a channel group
   This call be called in blocking mode from the timer, in which case it waits for the DMA lock.
@@ -957,7 +1128,13 @@ void RCOutput::dshot_send(pwm_group &group, bool blocking)
     group.last_dshot_send_us = AP_HAL::micros64();
 #endif //#ifndef DISABLE_DSHOT
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   send a series of pulses for a group using DMAR. Pulses must have
   been encoded into the group dma_buffer with interleaving for the 4
@@ -995,7 +1172,13 @@ void RCOutput::send_pulses_DMAR(pwm_group &group, uint32_t buffer_length)
     dmaStreamEnable(group.dma);
 #endif //#ifndef DISABLE_DSHOT
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   unlock DMA channel after a dshot send completes
  */
@@ -1008,7 +1191,13 @@ void RCOutput::dma_unlock(void *p)
     chSysUnlockFromISR();
 #endif
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   DMA interrupt handler. Used to mark DMA completed for DShot
  */
@@ -1026,7 +1215,13 @@ void RCOutput::dma_irq_callback(void *p, uint32_t flags)
     }
     chSysUnlockFromISR();
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   setup for serial output to an ESC using the given
   baudrate. Assumes 1 start bit, 1 stop bit, LSB first and 8
@@ -1101,7 +1296,13 @@ bool RCOutput::serial_setup_output(uint8_t chan, uint32_t baudrate, uint16_t cha
     return true;
 }
         
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   fill in a DMA buffer for a serial byte, assuming 1 start bit and 1 stop bit
  */
@@ -1123,7 +1324,13 @@ void RCOutput::fill_DMA_buffer_byte(uint32_t *buffer, uint8_t stride, uint8_t b,
     }
 }
 
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   send one serial byte, blocking call, should be called with the DMA lock held
 */
@@ -1145,7 +1352,13 @@ bool RCOutput::serial_write_byte(uint8_t b)
     
     return (mask & serial_event_mask) != 0;
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   send a set of serial bytes, blocking call
 */
@@ -1174,7 +1387,13 @@ bool RCOutput::serial_write_bytes(const uint8_t *bytes, uint16_t len)
     return false;
 #endif //#if STM32_DMA_ADVANCED
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   irq handler for bit transition in serial_read_byte()
   This implements a one byte soft serial reader
@@ -1234,7 +1453,13 @@ void RCOutput::serial_bit_irq(void)
         chSysUnlockFromISR();
     }
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   timeout a byte read
  */
@@ -1245,7 +1470,13 @@ void RCOutput::serial_byte_timeout(void *ctx)
     chEvtSignalI((thread_t *)ctx, serial_event_mask);
     chSysUnlockFromISR();
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   read a byte from a port, using serial parameters from serial_setup_output()
 */
@@ -1274,7 +1505,13 @@ bool RCOutput::serial_read_byte(uint8_t &b)
     b = uint8_t(byteval>>1);
     return true;
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   read a byte from a port, using serial parameters from serial_setup_output()
 */
@@ -1339,7 +1576,13 @@ uint16_t RCOutput::serial_read_bytes(uint8_t *buf, uint16_t len)
 #endif //#ifndef DISABLE_SERIAL_ESC_COMM
 
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   end serial output
 */
@@ -1366,20 +1609,33 @@ void RCOutput::serial_end(void)
     serial_group = nullptr;
 #endif //#ifndef DISABLE_SERIAL_ESC_COMM
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   get safety switch state for Util.cpp
  */
 AP_HAL::Util::safety_state RCOutput::_safety_switch_state(void)
 {
 #if HAL_WITH_IO_MCU
-    if (AP_BoardConfig::io_enabled()) {
+    if (AP_BoardConfig::io_enabled())
+    {
         return iomcu.get_safety_switch_state();
     }
 #endif
     return safety_state;
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   force the safety switch on, disabling PWM output from the IO board
 */
@@ -1395,7 +1651,13 @@ bool RCOutput::force_safety_on(void)
     return true;
 #endif
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   force the safety switch off, enabling PWM output from the IO board
 */
@@ -1409,7 +1671,13 @@ void RCOutput::force_safety_off(void)
     safety_state = AP_HAL::Util::SAFETY_ARMED;
 #endif
 }
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   set PWM to send to a set of channels when the safety switch is
   in the safe state
@@ -1430,7 +1698,7 @@ void RCOutput::set_safety_pwm(uint32_t chmask, uint16_t period_us)
 
 
 /************************************************************************************************************************************
-*函数原型：void RCOutput::safety_update(void
+*函数原型：void RCOutput::safety_update(void)
 *函数功能：更新安全状态
 *修改日期：2018-10-29
 *备   注：  update safety state
@@ -1499,7 +1767,13 @@ void RCOutput::safety_update(void)
 
 
 
-
+/***********************************************************************************************************************
+*函数原型：void Copter::update_ukf(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：UKF数据更新- 400hz
+*************************************************************************************************************************/
 /*
   set PWM to send to a set of channels if the FMU firmware dies
 */

@@ -348,7 +348,7 @@ void Copter::motors_output()
         ap.in_arming_delay = false;
     }
 
-    // output any servo channels
+    //输出任何伺服通道----- output any servo channels
     SRV_Channels::calc_pwm();
 
     // cork now, so that all channel outputs happen at once
@@ -358,9 +358,11 @@ void Copter::motors_output()
     SRV_Channels::output_ch_all();
 
     // check if we are performing the motor test
-    if (ap.motor_test) {
+    if (ap.motor_test)
+    {
         motor_test_output();
-    } else {
+    } else
+    {
         bool interlock = motors->armed() && !ap.in_arming_delay && (!ap.using_interlock || ap.motor_interlock_switch) && !ap.motor_emergency_stop;
         if (!motors->get_interlock() && interlock) {
             motors->set_interlock(true);

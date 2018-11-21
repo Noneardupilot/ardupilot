@@ -29,7 +29,8 @@
 #include "hal.h"
 #include "hrt.h"
 
-class HAL_ChibiOS : public AP_HAL::HAL {
+class HAL_ChibiOS : public AP_HAL::HAL
+{
 public:
     HAL_ChibiOS();
     void run(int argc, char* const* argv, Callbacks* callbacks) const override;

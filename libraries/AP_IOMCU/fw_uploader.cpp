@@ -78,15 +78,18 @@ bool AP_IOMCU::upload_fw(void)
     bool ret = false;
 
     /* look for the bootloader for 150 ms */
-    for (uint8_t i = 0; i < 15; i++) {
+    for (uint8_t i = 0; i < 15; i++)
+    {
         ret = sync();
-        if (ret) {
+        if (ret)
+        {
             break;
         }
         hal.scheduler->delay(10);
     }
 
-    if (!ret) {
+    if (!ret)
+    {
         debug("IO update failed sync");
         return false;
     }
@@ -94,7 +97,8 @@ bool AP_IOMCU::upload_fw(void)
     uint32_t bl_rev;
     ret = get_info(INFO_BL_REV, bl_rev);
 
-    if (!ret) {
+    if (!ret)
+    {
         debug("Err: failed to contact bootloader");
         return false;
     }
@@ -147,11 +151,13 @@ bool AP_IOMCU::upload_fw(void)
  */
 bool AP_IOMCU::recv_byte_with_timeout(uint8_t *c, uint32_t timeout_ms)
 {
+	debug("recv_byte:");
     uint32_t start = AP_HAL::millis();
     do {
         int16_t v = uart.read();
         if (v >= 0) {
             *c = uint8_t(v);
+            debug("%u", *c);
             return true;
         }
         hal.scheduler->delay_microseconds(50);

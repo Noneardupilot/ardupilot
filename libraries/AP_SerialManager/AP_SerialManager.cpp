@@ -206,7 +206,8 @@ void AP_SerialManager::init()
     }
     
     // initialise serial ports
-    for (uint8_t i=1; i<SERIALMANAGER_NUM_PORTS; i++) {
+    for (uint8_t i=1; i<SERIALMANAGER_NUM_PORTS; i++)
+    {
 
 #ifdef CONFIG_ARCH_BOARD_PX4FMU_V2
         if (i == 5 && state[i].protocol != SerialProtocol_None) {

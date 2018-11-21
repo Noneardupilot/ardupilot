@@ -27,6 +27,14 @@ enum ioevents {
 static uint32_t num_code_read, num_bad_crc, num_write_pkt, num_unknown_pkt;
 static uint32_t num_idle_rx, num_dma_complete_rx, num_total_rx, num_rx_error;
 
+
+/***********************************************************************************************************************
+*函数原型：static void dma_rx_end_cb(UARTDriver *uart)
+*函数功能：dma 发送结束回调
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 static void dma_rx_end_cb(UARTDriver *uart)
 {
     osalSysLockFromISR();
@@ -38,7 +46,7 @@ static void dma_rx_end_cb(UARTDriver *uart)
     dmaStreamDisable(uart->dmarx);
     dmaStreamDisable(uart->dmatx);
 
-    iomcu.process_io_packet();
+    iomcu.process_io_packet(); //运行包处理函数
     num_total_rx++;
     num_dma_complete_rx = num_total_rx - num_idle_rx;
 
@@ -57,7 +65,13 @@ static void dma_rx_end_cb(UARTDriver *uart)
     uart->usart->CR3 |= USART_CR3_DMAT;
     osalSysUnlockFromISR();
 }
-
+/***********************************************************************************************************************
+*函数原型：static void dma_rx_end_cb(UARTDriver *uart)
+*函数功能：dma 发送
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 static void idle_rx_handler(UARTDriver *uart)
 {
     volatile uint16_t sr = uart->usart->SR;
@@ -75,35 +89,42 @@ static void idle_rx_handler(UARTDriver *uart)
         (void)uart->usart->SR;
         (void)uart->usart->DR;
         (void)uart->usart->DR;
-        dmaStreamDisable(uart->dmarx);
-        dmaStreamDisable(uart->dmatx);
+        dmaStreamDisable(uart->dmarx);//不使能串口DMA接收
+        dmaStreamDisable(uart->dmatx);//不使能串口DMA发送
 
-        dmaStreamSetMemory0(uart->dmarx, &iomcu.rx_io_packet);
-        dmaStreamSetTransactionSize(uart->dmarx, sizeof(iomcu.rx_io_packet));
-        dmaStreamSetMode(uart->dmarx, uart->dmamode    | STM32_DMA_CR_DIR_P2M |
+        dmaStreamSetMemory0(uart->dmarx, &iomcu.rx_io_packet);                  //将存储器目的地关联到DMA流
+        dmaStreamSetTransactionSize(uart->dmarx, sizeof(iomcu.rx_io_packet));   //设置要执行的传输的数量
+        dmaStreamSetMode(uart->dmarx, uart->dmamode    | STM32_DMA_CR_DIR_P2M | //设置DMA模式
                          STM32_DMA_CR_MINC | STM32_DMA_CR_TCIE);
-        dmaStreamEnable(uart->dmarx);
+        dmaStreamEnable(uart->dmarx);       //使能串口DMA接收
         uart->usart->CR3 |= USART_CR3_DMAR;
         osalSysUnlockFromISR();
         return;
     }
 
-    if (sr & USART_SR_IDLE) {
+    if (sr & USART_SR_IDLE)
+    {
         dma_rx_end_cb(uart);
         num_idle_rx++;
     }
 }
 
-/*
- * UART driver configuration structure.
- */
-static UARTConfig uart_cfg = {
+/***********************************************************************************************************************
+*函数原型：static UARTConfig uart_cfg
+*函数功能：串口驱动配置结构体
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：UART driver configuration structure.
+*************************************************************************************************************************/
+
+static UARTConfig uart_cfg =
+{
     nullptr,
     nullptr,
     dma_rx_end_cb,
     nullptr,
     nullptr,
-    idle_rx_handler,
+    idle_rx_handler,  //配置接收中断
     1500000,      //1.5MBit
     USART_CR1_IDLEIE,
     0,
@@ -129,11 +150,11 @@ void setup(void)
         hal.rcout->enable_ch(i);
     }
 
-    iomcu.init();
+    iomcu.init();    //配置io进行初始化
 
-    iomcu.calculate_fw_crc();
-    uartStart(&UARTD2, &uart_cfg);
-    uartStartReceive(&UARTD2, sizeof(iomcu.rx_io_packet), &iomcu.rx_io_packet);
+    iomcu.calculate_fw_crc();       //校验固件
+    uartStart(&UARTD2, &uart_cfg);  //配置串口2，开启串口2的DMA中断
+    uartStartReceive(&UARTD2, sizeof(iomcu.rx_io_packet), &iomcu.rx_io_packet);//在UART外围设备上启动接收操作。
 }
 
 /***********************************************************************************************************************
@@ -285,8 +306,8 @@ void AP_IOMCU_FW::rcin_update()
 }
 
 /***********************************************************************************************************************
-*函数原型：void AP_IOMCU_FW::pwm_out_update()
-*函数功能：pwm输出更新
+*函数原型：void AP_IOMCU_FW::process_io_packet()
+*函数功能：包处理函数
 *修改日期：2018-11-5
 *修改作者：cihang_uav
 *备注信息：
@@ -296,7 +317,8 @@ void AP_IOMCU_FW::process_io_packet()
     uint8_t rx_crc = rx_io_packet.crc;
     rx_io_packet.crc = 0;
     uint8_t calc_crc = crc_crc8((const uint8_t *)&rx_io_packet, rx_io_packet.get_size());
-    if (rx_crc != calc_crc) {
+    if (rx_crc != calc_crc)
+    {
         memset(&tx_io_packet, 0xFF, sizeof(tx_io_packet));
         tx_io_packet.count = 0;
         tx_io_packet.code = CODE_CORRUPT;
@@ -305,10 +327,13 @@ void AP_IOMCU_FW::process_io_packet()
         num_bad_crc++;
         return;
     }
-    switch (rx_io_packet.code) {
-    case CODE_READ: {
+    switch (rx_io_packet.code)
+    {
+    case CODE_READ:   //读取数据
+    {
         num_code_read++;
-        if (!handle_code_read()) {
+        if (!handle_code_read())   //读取数据
+        {
             memset(&tx_io_packet, 0xFF, sizeof(tx_io_packet));
             tx_io_packet.count = 0;
             tx_io_packet.code = CODE_ERROR;
@@ -317,10 +342,12 @@ void AP_IOMCU_FW::process_io_packet()
         }
     }
     break;
-    case CODE_WRITE: {
+    case CODE_WRITE:  //写数据
+    {
         num_write_pkt++;
-        if (!handle_code_write()) {
-            memset(&tx_io_packet, 0xFF, sizeof(tx_io_packet));
+        if (!handle_code_write()) //写数据
+        {
+            memset(&tx_io_packet, 0xFF, sizeof(tx_io_packet)); //不成功就要把发送包清空，设置FF
             tx_io_packet.count = 0;
             tx_io_packet.code = CODE_ERROR;
             tx_io_packet.crc = 0;
@@ -328,7 +355,8 @@ void AP_IOMCU_FW::process_io_packet()
         }
     }
     break;
-    default: {
+    default:
+    {
         num_unknown_pkt++;
     }
     break;
@@ -346,12 +374,14 @@ bool AP_IOMCU_FW::handle_code_read()
 {
     uint16_t *values = nullptr;
 #define COPY_PAGE(_page_name)							\
-	do {									\
+	do
+    {									\
 		values = (uint16_t *)&_page_name;				\
 		tx_io_packet.count = sizeof(_page_name) / sizeof(uint16_t);	\
 	} while(0);
 
-    switch (rx_io_packet.page) {
+    switch (rx_io_packet.page)
+    {
     case PAGE_SETUP:
         COPY_PAGE(reg_setup);
         break;
@@ -371,69 +401,78 @@ bool AP_IOMCU_FW::handle_code_read()
     last_offset = rx_io_packet.offset;
 
     /* if the offset is at or beyond the end of the page, we have no data */
-    if (rx_io_packet.offset >= tx_io_packet.count) {
+    if (rx_io_packet.offset >= tx_io_packet.count)
+    {
         return false;
     }
 
     /* correct the data pointer and count for the offset */
     values += rx_io_packet.offset;
     tx_io_packet.count -= rx_io_packet.offset;
-    memcpy(tx_io_packet.regs, values, sizeof(uint16_t)*tx_io_packet.count);
+    memcpy(tx_io_packet.regs, values, sizeof(uint16_t)*tx_io_packet.count); //拷贝解析的数据到发送包，其中tx_io_packet.regs就是获取的FMU的数据
     tx_io_packet.crc = 0;
     tx_io_packet.crc =  crc_crc8((const uint8_t *)&tx_io_packet, tx_io_packet.get_size());
     return true;
 }
 /***********************************************************************************************************************
-*函数原型：void AP_IOMCU_FW::pwm_out_update()
-*函数功能：pwm输出更新
+*函数原型：bool AP_IOMCU_FW::handle_code_write()
+*函数功能：处理代码写
 *修改日期：2018-11-5
 *修改作者：cihang_uav
 *备注信息：
 *************************************************************************************************************************/
 bool AP_IOMCU_FW::handle_code_write()
 {
-    switch (rx_io_packet.page) {
-    case PAGE_SETUP:
-        switch (rx_io_packet.offset) {
-        case PAGE_REG_SETUP_ARMING:
+    switch (rx_io_packet.page)
+    {
+    case PAGE_SETUP: //开始
+        switch (rx_io_packet.offset)
+        {
+        case PAGE_REG_SETUP_ARMING:             //识别arm
             reg_setup.arming = rx_io_packet.regs[0];
             break;
-        case PAGE_REG_SETUP_FORCE_SAFETY_OFF:
-            if (rx_io_packet.regs[0] == FORCE_SAFETY_MAGIC) {
+        case PAGE_REG_SETUP_FORCE_SAFETY_OFF:  //安全开关关闭
+            if (rx_io_packet.regs[0] == FORCE_SAFETY_MAGIC)
+            {
                 hal.rcout->force_safety_off();
                 reg_status.flag_safety_off = true;
-            } else {
+            } else
+            {
                 return false;
             }
             break;
-        case PAGE_REG_SETUP_FORCE_SAFETY_ON:
-            if (rx_io_packet.regs[0] == FORCE_SAFETY_MAGIC) {
+        case PAGE_REG_SETUP_FORCE_SAFETY_ON:  //安全开关打开
+            if (rx_io_packet.regs[0] == FORCE_SAFETY_MAGIC)
+            {
                 hal.rcout->force_safety_on();
                 reg_status.flag_safety_off = false;
-            } else {
+            } else
+            {
                 return false;
             }
             break;
-        case PAGE_REG_SETUP_ALTRATE:
+        case PAGE_REG_SETUP_ALTRATE:          //设置高度速率
             reg_setup.pwm_altrate = rx_io_packet.regs[0];
             update_rcout_freq = true;
             break;
-        case PAGE_REG_SETUP_PWM_RATE_MASK:
+        case PAGE_REG_SETUP_PWM_RATE_MASK:   //设置pwm速率标志
             reg_setup.pwm_rates = rx_io_packet.regs[0];
             update_rcout_freq = true;
             break;
         case PAGE_REG_SETUP_DEFAULTRATE:
-            if (rx_io_packet.regs[0] < 25 && reg_setup.pwm_altclock == 1) {
+            if (rx_io_packet.regs[0] < 25 && reg_setup.pwm_altclock == 1)
+            {
                 rx_io_packet.regs[0] = 25;
             }
 
-            if (rx_io_packet.regs[0] > 400 && reg_setup.pwm_altclock == 1) {
+            if (rx_io_packet.regs[0] > 400 && reg_setup.pwm_altclock == 1)
+            {
                 rx_io_packet.regs[0] = 400;
             }
             reg_setup.pwm_defaultrate = rx_io_packet.regs[0];
             update_default_rate = true;
             break;
-        case PAGE_REG_SETUP_SBUS_RATE:
+        case PAGE_REG_SETUP_SBUS_RATE:   //sbus速率
             break;
         case PAGE_REG_SETUP_FEATURES:
             reg_setup.features = rx_io_packet.regs[0];
@@ -450,13 +489,15 @@ bool AP_IOMCU_FW::handle_code_write()
             break;
 
         case PAGE_REG_SETUP_REBOOT_BL:
-            if (reg_status.flag_safety_off) {
+            if (reg_status.flag_safety_off)
+            {
                 // don't allow reboot while armed
                 return false;
             }
 
             // check the magic value
-            if (rx_io_packet.regs[0] != REBOOT_BL_MAGIC) {
+            if (rx_io_packet.regs[0] != REBOOT_BL_MAGIC)
+            {
                 return false;
             }
             schedule_reboot(100);
@@ -466,13 +507,16 @@ bool AP_IOMCU_FW::handle_code_write()
             break;
         }
         break;
-    case PAGE_DIRECT_PWM: {
+    case PAGE_DIRECT_PWM:   //pwm
+    {
         /* copy channel data */
         uint8_t i = 0, offset = rx_io_packet.offset, num_values = rx_io_packet.count;
-        while ((offset < IOMCU_MAX_CHANNELS) && (num_values > 0)) {
+        while ((offset < IOMCU_MAX_CHANNELS) && (num_values > 0))
+        {
             /* XXX range-check value? */
-            if (rx_io_packet.regs[i] != PWM_IGNORE_THIS_CHANNEL) {
-                reg_direct_pwm.pwm[offset] = rx_io_packet.regs[i];
+            if (rx_io_packet.regs[i] != PWM_IGNORE_THIS_CHANNEL)
+            {
+                reg_direct_pwm.pwm[offset] = rx_io_packet.regs[i]; //看到这个值基本就知道了
             }
 
             offset++;
@@ -482,23 +526,23 @@ bool AP_IOMCU_FW::handle_code_write()
         fmu_data_received_time = AP_HAL::millis();
         reg_status.flag_fmu_ok = true;
         reg_status.flag_raw_pwm = true;
-        chEvtSignalI(thread_ctx, EVENT_MASK(IOEVENT_PWM));
+        chEvtSignalI(thread_ctx, EVENT_MASK(IOEVENT_PWM)); //事件
         break;
     }
 
     default:
         break;
     }
-    memset(&tx_io_packet, 0xFF, sizeof(tx_io_packet));
+    memset(&tx_io_packet, 0xFF, sizeof(tx_io_packet)); //把tx_io_packet内存数据全部置1
     tx_io_packet.count = 0;
     tx_io_packet.code = CODE_SUCCESS;
     tx_io_packet.crc = 0;
-    tx_io_packet.crc =  crc_crc8((const uint8_t *)&tx_io_packet, tx_io_packet.get_size());
+    tx_io_packet.crc =  crc_crc8((const uint8_t *)&tx_io_packet, tx_io_packet.get_size()); //计算校验
     return true;
 }
 /***********************************************************************************************************************
-*函数原型：void AP_IOMCU_FW::pwm_out_update()
-*函数功能：pwm输出更新
+*函数原型：void AP_IOMCU_FW::schedule_reboot(uint32_t time_ms)
+*函数功能：系统复位
 *修改日期：2018-11-5
 *修改作者：cihang_uav
 *备注信息：
@@ -509,11 +553,11 @@ void AP_IOMCU_FW::schedule_reboot(uint32_t time_ms)
     reboot_time = AP_HAL::millis() + time_ms;
 }
 /***********************************************************************************************************************
-*函数原型：void AP_IOMCU_FW::pwm_out_update()
+*函数原型：void AP_IOMCU_FW::calculate_fw_crc(void)
 *函数功能：pwm输出更新
 *修改日期：2018-11-5
 *修改作者：cihang_uav
-*备注信息：
+*备注信息：计算当前固件的CRC
 *************************************************************************************************************************/
 void AP_IOMCU_FW::calculate_fw_crc(void)
 {
@@ -522,7 +566,8 @@ void AP_IOMCU_FW::calculate_fw_crc(void)
     // compute CRC of the current firmware
     uint32_t sum = 0;
 
-    for (unsigned p = 0; p < APP_SIZE_MAX; p += 4) {
+    for (unsigned p = 0; p < APP_SIZE_MAX; p += 4)
+    {
         uint32_t bytes = *(uint32_t *)(p + APP_LOAD_ADDRESS);
         sum = crc_crc32(sum, (const uint8_t *)&bytes, sizeof(bytes));
     }

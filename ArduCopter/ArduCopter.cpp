@@ -212,13 +212,14 @@ void Copter::loop()
 
 void Copter::fast_loop()
 {
+
     // update INS immediately to get current gyro data populated
     ins.update();
 
     // run low level rate controllers that only require IMU data
     attitude_control->rate_controller_run();
 
-    // send outputs to the motors library immediately
+    //立即将输出发送到电机库----- send outputs to the motors library immediately
     motors_output();
 
     // run EKF state estimator (expensive)
@@ -251,7 +252,8 @@ void Copter::fast_loop()
 #endif
 
     // log sensor health
-    if (should_log(MASK_LOG_ANY)) {
+    if (should_log(MASK_LOG_ANY))
+    {
         Log_Sensor_Health();
     }
 }
@@ -470,15 +472,18 @@ void Copter::update_GPS(void)
     gps.update();
 
     // log after every gps message
-    for (uint8_t i=0; i<gps.num_sensors(); i++) {
-        if (gps.last_message_time_ms(i) != last_gps_reading[i]) {
+    for (uint8_t i=0; i<gps.num_sensors(); i++)
+    {
+        if (gps.last_message_time_ms(i) != last_gps_reading[i])
+        {
             last_gps_reading[i] = gps.last_message_time_ms(i);
             gps_updated = true;
             break;
         }
     }
 
-    if (gps_updated) {
+    if (gps_updated)
+    {
 #if CAMERA == ENABLED
         camera.update();
 #endif

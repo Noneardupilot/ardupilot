@@ -41,17 +41,24 @@ extern const AP_HAL::HAL& hal;
 *************************************************************************************************************************/
 void RCInput::init()
 {
-#if HAL_USE_ICU == TRUE
+
+//	hal.uartD->printf("HAL_USE_ICU=\r\n",HAL_USE_ICU);
+//	hal.uartD->printf("AAAA\r\n");
+#if HAL_USE_ICU == TRUE  //协处理器调用函数
+
+//	hal.uartD->printf("AAAABBBB\r\n");
     //附加接收信号的定时器通道。-----attach timer channel on which the signal will be received
     sig_reader.attach_capture_timer(&RCIN_ICU_TIMER, RCIN_ICU_CHANNEL, STM32_RCIN_DMA_STREAM, STM32_RCIN_DMA_CHANNEL);
     rcin_prot.init();
 #endif
+//    hal.uartD->printf("HAL_USE_EICU=\r\n",HAL_USE_EICU);
+#if HAL_USE_EICU == TRUE //主处理器
 
-#if HAL_USE_EICU == TRUE
+//   hal.uartD->printf("AAAABBBBCCC\r\n");
     sig_reader.init(&RCININT_EICU_TIMER, RCININT_EICU_CHANNEL);
     rcin_prot.init();
 #endif
-
+//    hal.uartG->printf("DDDDD\r\n");
     _init = true;
 }
 

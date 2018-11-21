@@ -135,6 +135,7 @@
 #       define BIT_PWR_MGMT_1_CYCLE                 0x20 // put sensor into cycle mode.  cycles between sleep mode and waking up to take a single sample of data from active sensors at a rate determined by LP_WAKE_CTRL
 #       define BIT_PWR_MGMT_1_SLEEP                 0x40 // put sensor into low power sleep mode
 #       define BIT_PWR_MGMT_1_DEVICE_RESET          0x80 // reset entire device
+//允许用户配置加速度计仅在低功耗模式下的唤醒频率
 #define MPUREG_PWR_MGMT_2                       0x6C    // allows the user to configure the frequency of wake-ups in Accelerometer Only Low Power Mode
 #define MPUREG_BANK_SEL                         0x6D    // DMP bank selection register (used to indirectly access DMP registers)
 #define MPUREG_MEM_START_ADDR                   0x6E    // DMP memory start address (used to indirectly write to dmp memory)

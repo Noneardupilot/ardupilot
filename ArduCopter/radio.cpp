@@ -47,7 +47,7 @@ void Copter::init_rc_in()
 		   }
 		   else if (copter.g.radio_mode==1)   //这里要进行切换初始化，设置日本手
 		   {
-			    hal.uartG->printf("JAPAN\r\n"); //loop_us=2500,这个单位是us
+			   // hal.uartG->printf("JAPAN\r\n"); //loop_us=2500,这个单位是us
 				channel_roll     = RC_Channels::rc_channel(rcmap.roll()-1);      //0
 
 				channel_throttle = RC_Channels::rc_channel(rcmap.pitch()-1);     //1

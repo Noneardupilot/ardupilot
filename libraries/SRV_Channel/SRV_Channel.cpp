@@ -107,26 +107,52 @@ uint16_t SRV_Channel::pwm_from_angle(int16_t scaled_value) const
     }
 }
 
+/***********************************************************************************************************************
+*函数原型：void SRV_Channels::set_output_pwm_chan(uint8_t chan, uint16_t value)
+*函数功能：将特定函数通道的输出值设置为PWM值
+*修改日期：2018-11-8
+*修改作者：cihang_uav
+*备注信息：set output value for a specific function channel as a pwm value
+*************************************************************************************************************************/
 void SRV_Channel::calc_pwm(int16_t output_scaled)
 {
-    if (have_pwm_mask & (1U<<ch_num)) {
+    if (have_pwm_mask & (1U<<ch_num))
+    {
         return;
     }
     uint16_t pwm;
-    if (type_angle) {
+    if (type_angle)
+    {
         pwm = pwm_from_angle(output_scaled);
-    } else {
+    } else
+    {
         pwm = pwm_from_range(output_scaled);
     }
-    set_output_pwm(pwm);
+    set_output_pwm(pwm); //设置输出PWM
 }
 
+/***********************************************************************************************************************
+*函数原型：void SRV_Channel::set_output_pwm(uint16_t pwm)
+*函数功能：设定特定的pwm
+*修改日期：2018-11-8
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void SRV_Channel::set_output_pwm(uint16_t pwm)
 {
-    output_pwm = pwm;
+    output_pwm = pwm;    //最终传送出去的PWM
     have_pwm_mask |= (1U<<ch_num);
 }
 
+
+
+/***********************************************************************************************************************
+*函数原型：void SRV_Channels::set_output_pwm_chan(uint8_t chan, uint16_t value)
+*函数功能：将特定函数通道的输出值设置为PWM值
+*修改日期：2018-11-8
+*修改作者：cihang_uav
+*备注信息：set output value for a specific function channel as a pwm value
+*************************************************************************************************************************/
 // set angular range of scaled output
 void SRV_Channel::set_angle(int16_t angle)
 {

@@ -178,17 +178,26 @@ bool AP_InertialSensor_Invensense::_has_auxiliary_bus()
     return _dev->bus_type() != AP_HAL::Device::BUS_TYPE_I2C;
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void AP_InertialSensor_Invensense::start()
+*函数功能：开始设置
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_InertialSensor_Invensense::start()
 {
-    if (!_dev->get_semaphore()->take(HAL_SEMAPHORE_BLOCK_FOREVER)) {
+    if (!_dev->get_semaphore()->take(HAL_SEMAPHORE_BLOCK_FOREVER)) //获取此设备所在总线的信号量。这只是为了在初始化阶段只使用驱动程序。
+    {
         return;
     }
 
-    // initially run the bus at low speed
+    //低速运行总线----- initially run the bus at low speed
     _dev->set_speed(AP_HAL::Device::SPEED_LOW);
 
     // only used for wake-up in accelerometer only low power mode
-    _register_write(MPUREG_PWR_MGMT_2, 0x00);
+    _register_write(MPUREG_PWR_MGMT_2, 0x00); //仅用于加速度计仅低功率模式的唤醒
     hal.scheduler->delay(1);
 
     // always use FIFO
@@ -196,7 +205,8 @@ void AP_InertialSensor_Invensense::start()
 
     // grab the used instances
     enum DevTypes gdev, adev;
-    switch (_mpu_type) {
+    switch (_mpu_type)
+    {
     case Invensense_MPU9250:
         gdev = DEVTYPE_GYR_MPU9250;
         adev = DEVTYPE_ACC_MPU9250;
@@ -223,7 +233,8 @@ void AP_InertialSensor_Invensense::start()
       setup temperature sensitivity and offset. This varies
       considerably between parts
      */
-    switch (_mpu_type) {
+    switch (_mpu_type)
+    {
     case Invensense_MPU9250:
         temp_zero = 21;
         temp_sensitivity = 1.0/340;
@@ -299,7 +310,8 @@ void AP_InertialSensor_Invensense::start()
     hal.scheduler->delay(1);
 
 	if (_mpu_type == Invensense_ICM20608 ||
-        _mpu_type == Invensense_ICM20602) {
+        _mpu_type == Invensense_ICM20602)
+	{
         // this avoids a sensor bug, see description above
 		_register_write(MPUREG_ICM_UNDOC1, MPUREG_ICM_UNDOC1_VALUE, true);
 	}
@@ -350,7 +362,7 @@ bool AP_InertialSensor_Invensense::update()
     update_accel(_accel_instance);
     update_gyro(_gyro_instance);
 
-    _publish_temperature(_accel_instance, _temp_filtered);
+    _publish_temperature(_accel_instance, _temp_filtered); //进行恒温控制函数
 
     return true;
 }
@@ -401,7 +413,8 @@ void AP_InertialSensor_Invensense::_poll_data()
 
 bool AP_InertialSensor_Invensense::_accumulate(uint8_t *samples, uint8_t n_samples)
 {
-    for (uint8_t i = 0; i < n_samples; i++) {
+    for (uint8_t i = 0; i < n_samples; i++)
+    {
         const uint8_t *data = samples + MPU_SAMPLE_SIZE * i;
         Vector3f accel, gyro;
         bool fsync_set = false;
@@ -434,7 +447,7 @@ bool AP_InertialSensor_Invensense::_accumulate(uint8_t *samples, uint8_t n_sampl
         _notify_new_accel_raw_sample(_accel_instance, accel, 0, fsync_set);
         _notify_new_gyro_raw_sample(_gyro_instance, gyro);
 
-        _temp_filtered = _temp_filter.apply(temp);
+        _temp_filtered = _temp_filter.apply(temp); //获取温度值
     }
     return true;
 }
@@ -550,28 +563,37 @@ void AP_InertialSensor_Invensense::_read_fifo()
       On I2C with the much lower clock rates we need a lower threshold
       or we may never catch up
      */
-    if (_dev->bus_type() == AP_HAL::Device::BUS_TYPE_I2C) {
-        if (n_samples > 4) {
+    if (_dev->bus_type() == AP_HAL::Device::BUS_TYPE_I2C)
+    {
+        if (n_samples > 4)
+        {
             need_reset = true;
             n_samples = 4;
         }
-    } else {
-        if (n_samples > 32) {
+    } else
+    {
+        if (n_samples > 32)
+        {
             need_reset = true;
             n_samples = 24;
         }
     }
     
-    while (n_samples > 0) {
+    while (n_samples > 0)
+    {
         uint8_t n = MIN(n_samples, MPU_FIFO_BUFFER_LEN);
-        if (!_dev->set_chip_select(true)) {
-            if (!_block_read(MPUREG_FIFO_R_W, rx, n * MPU_SAMPLE_SIZE)) {
+        if (!_dev->set_chip_select(true))
+        {
+            if (!_block_read(MPUREG_FIFO_R_W, rx, n * MPU_SAMPLE_SIZE))
+            {
                 goto check_registers;
             }
-        } else {
+        } else
+        {
             // this ensures we keep things nicely setup for DMA
             uint8_t reg = MPUREG_FIFO_R_W | 0x80;
-            if (!_dev->transfer(&reg, 1, nullptr, 0)) {
+            if (!_dev->transfer(&reg, 1, nullptr, 0))
+            {
                 _dev->set_chip_select(false);
                 goto check_registers;
             }
@@ -585,12 +607,14 @@ void AP_InertialSensor_Invensense::_read_fifo()
         }
 
         if (_fast_sampling) {
-            if (!_accumulate_sensor_rate_sampling(rx, n)) {
+            if (!_accumulate_sensor_rate_sampling(rx, n))
+            {
                 debug("IMU[%u] stop at %u of %u", _accel_instance, n_samples, bytes_read/MPU_SAMPLE_SIZE);
                 break;
             }
         } else {
-            if (!_accumulate(rx, n)) {
+            if (!_accumulate(rx, n))
+            {
                 break;
             }
         }

@@ -108,7 +108,8 @@ public:
     // ask if IOMCU is enabled. This is a uint8_t to allow
     // developer debugging by setting BRD_IO_ENABLE=100 to avoid the
     // crc check of IO firmware on startup
-    static uint8_t io_enabled(void) {
+    static uint8_t io_enabled(void)
+    {
 #if AP_FEATURE_BOARD_DETECT
         return instance?uint8_t(instance->state.io_enable.get()):0;
 #else
@@ -116,8 +117,9 @@ public:
 #endif
     }
 
-    // get number of PWM outputs enabled on FMU
-    static uint8_t get_pwm_count(void) {
+    //获取FMU上启用的PWM输出数----- get number of PWM outputs enabled on FMU
+    static uint8_t get_pwm_count(void)
+    {
         return instance?instance->pwm_count.get():4;
     }
 

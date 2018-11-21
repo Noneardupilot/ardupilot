@@ -6,16 +6,16 @@
 #python2.X中print不需要括号，而在python3.X中则需要。
 
 from __future__ import print_function #主要就是设置print
-print('ardupilot开始编译')          #字节添加代码
-print('ardupilot开始编译根目录wscript')  #字节添加代码
+#print('ardupilot开始编译')          #字节添加代码
+#print('ardupilot开始编译根目录wscript')  #字节添加代码
 import os.path  #导入os.path模块,获取当前脚本路径，加载到sys.path里，就是组织代码使用
 import sys      #导入sys,用来获取当前模块的绝对路径
 sys.path.insert(0, 'Tools/ardupilotwaf/') #把ardupilotwaf加载到当前路径
 
 import ardupilotwaf #上面加载路径完成后，现在就可以导入这个模块，可以被后面使用
-print("ardupilotwaf=",ardupilotwaf) #这个打印输出：ardupilotwaf= <module 'ardupilotwaf' from 'Tools/ardupilotwaf/ardupilotwaf.pyc'>
+#print("ardupilotwaf=",ardupilotwaf) #这个打印输出：ardupilotwaf= <module 'ardupilotwaf' from 'Tools/ardupilotwaf/ardupilotwaf.pyc'>
 import boards       #导入boards
-print("boards=",boards)  #打印输出：boards= <module 'boards' from 'Tools/ardupilotwaf/boards.pyc'>
+#print("boards=",boards)  #打印输出：boards= <module 'boards' from 'Tools/ardupilotwaf/boards.pyc'>
 
 from waflib import Build, ConfigSet, Configure, Context, Utils #从waflib库导入Build, ConfigSet, Configure, Context, Utils;这个waflib在modules下面
 
@@ -72,10 +72,10 @@ def options(opt):
     opt.load('ardupilotwaf')
     opt.load('build_summary')
     g = opt.ap_groups['configure']
-    print("运行测试")
+    #print("运行测试")
     boards_names = boards.get_boards_names()
-    print(boards_names)
-    print("g.add_option=",g.add_option)
+    #print(boards_names)
+    #print("g.add_option=",g.add_option)
     g.add_option('--board',
         action='store',
         choices=boards_names,
@@ -117,9 +117,9 @@ submodules at specific revisions.
     g.add_option('--enable-header-checks', action='store_true',
         default=False,
         help="Enable checking of headers")
-    print('***************************')
-    print("为啥我会显示到ubuntu界面上？我在哪里执行的？欢迎分析我")
-    print('***************************')
+    #print('***************************')
+    #print("为啥我会显示到ubuntu界面上？我在哪里执行的？欢迎分析我")
+    #print('***************************')
     g.add_option('--default-parameters',
         default=None,
         help='set default parameters to embed in the firmware')
@@ -174,7 +174,7 @@ configuration in order to save typing.
         default=False,
         help='Force a static build')
    
-    print('******options end*************')
+    #print('******options end*************')
 
 #定义函数
 def _collect_autoconfig_files(cfg):
@@ -196,7 +196,7 @@ def _collect_autoconfig_files(cfg):
                 cfg.files.append(p)
 #定义函数
 def configure(cfg):
-    print("运行configure")
+    #print("运行configure")
     cfg.env.BOARD = cfg.options.board
     cfg.env.DEBUG = cfg.options.debug
     cfg.env.AUTOCONFIG = cfg.options.autoconfig
@@ -290,7 +290,7 @@ def configure(cfg):
 
     # Always use system extensions
     cfg.define('_GNU_SOURCE', 1)
-    print("函数运行这里？")
+    #print("函数运行这里？")
     cfg.write_config_header(os.path.join(cfg.variant, 'ap_config.h'))
 
     _collect_autoconfig_files(cfg)
@@ -326,9 +326,9 @@ def board(ctx):
     except:
         print('No board currently configured')
         return
-    print('***************************')
+    #print('***************************')
     print('Board configured to: {}'.format(env.VARIANT))
-    print('***************************')
+    #print('***************************')
     
 #定义函数   
 def _build_cmd_tweaks(bld):
@@ -468,9 +468,9 @@ def load_pre_build(bld):
         brd.pre_build(bld)    
 #定义函数
 def build(bld):
-    print("=======小历====================")
+    #print("=======小历====================")
     
-    print("===========================")
+    #print("===========================")
     config_hash = Utils.h_file(bld.bldnode.make_node('ap_config.h').abspath())
     bld.env.CCDEPS = config_hash
     bld.env.CXXDEPS = config_hash
@@ -537,12 +537,12 @@ class LocalInstallContext(Build.InstallContext):
         self.local_destdir = os.path.join(self.variant_dir, 'install')
 
     def execute(self):
-        print("NNNNNN3")
+        #print("NNNNNN3")
         old_destdir = self.options.destdir
         self.options.destdir = self.local_destdir
         r = super(LocalInstallContext, self).execute()
         self.options.destdir = old_destdir
-        print("execute(self)")
+        #print("execute(self)")
         return r
 
 class RsyncContext(LocalInstallContext):

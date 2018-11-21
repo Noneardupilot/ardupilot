@@ -1,4 +1,5 @@
-/*
+/*一种IO单片机控制协议的实现对于自举，
+ * 这将首先实现PX4IO协议，但稍后将转移到ARDUPILOT特定协议
   implement protocol for controlling an IO microcontroller
 
   For bootstrapping this will initially implement the px4io protocol,
@@ -17,7 +18,7 @@
 
 extern const AP_HAL::HAL &hal;
 
-// pending IO events to send, used as an event mask
+//待发送的IO事件，用作事件掩码---- pending IO events to send, used as an event mask
 enum ioevents {
     IOEVENT_INIT=1,
     IOEVENT_SEND_PWM_OUT,
@@ -52,7 +53,7 @@ AP_IOMCU::AP_IOMCU(AP_HAL::UARTDriver &_uart) :
 void AP_IOMCU::init(void)
 {
     // uart runs at 1.5MBit
-    uart.begin(1500*1000, 256, 256);
+    uart.begin(1500*1000, 256, 256);  //串口设置
     uart.set_blocking_writes(false);
     uart.set_unbuffered_writes(true);
 
@@ -60,8 +61,10 @@ void AP_IOMCU::init(void)
     hal.scheduler->delay(2000);
     
     AP_BoardConfig *boardconfig = AP_BoardConfig::get_instance();
-    if (!boardconfig || boardconfig->io_enabled() == 1)
+
+    if (!boardconfig || boardconfig->io_enabled() == 1) //这里设置是否进行对IO电路板进行校验
     {
+
         check_crc(); //检测是否需要跟新固件
     }
 
@@ -103,7 +106,8 @@ void AP_IOMCU::event_failed(uint8_t event)
 *************************************************************************************************************************/
 void AP_IOMCU::thread_main(void)
 {
-    thread_ctx = chThdGetSelfX();
+
+    thread_ctx = chThdGetSelfX();   //返回当前线程的指针
 
     uart.begin(1500*1000, 256, 256);
     uart.set_blocking_writes(false);
@@ -204,19 +208,22 @@ void AP_IOMCU::thread_main(void)
         
         // check for regular timed events
         uint32_t now = AP_HAL::millis();
-        if (now - last_rc_read_ms > 20) {
+        if (now - last_rc_read_ms > 20)
+        {
             // read RC input at 50Hz
             read_rc_input();
             last_rc_read_ms = AP_HAL::millis();
         }
         
-        if (now - last_status_read_ms > 50) {
+        if (now - last_status_read_ms > 50)
+        {
             // read status at 20Hz
             read_status();
             last_status_read_ms = AP_HAL::millis();
         }
 
-        if (now - last_servo_read_ms > 50) {
+        if (now - last_servo_read_ms > 50)
+        {
             // read servo out at 20Hz
             read_servo();
             last_servo_read_ms = AP_HAL::millis();
@@ -229,15 +236,18 @@ void AP_IOMCU::thread_main(void)
         }
 #endif // IOMCU_DEBUG
 
-        if (now - last_safety_option_check_ms > 1000) {
+        if (now - last_safety_option_check_ms > 1000)
+        {
             update_safety_options();
             last_safety_option_check_ms = now;
         }
 
         // update safety pwm
-        if (pwm_out.safety_pwm_set != pwm_out.safety_pwm_sent) {
+        if (pwm_out.safety_pwm_set != pwm_out.safety_pwm_sent)
+        {
             uint8_t set = pwm_out.safety_pwm_set;
-            if (write_registers(PAGE_DISARMED_PWM, 0, IOMCU_MAX_CHANNELS, pwm_out.safety_pwm)) {
+            if (write_registers(PAGE_DISARMED_PWM, 0, IOMCU_MAX_CHANNELS, pwm_out.safety_pwm))
+            {
                 pwm_out.safety_pwm_sent = set;
             }
         }
@@ -246,7 +256,8 @@ void AP_IOMCU::thread_main(void)
         if (pwm_out.failsafe_pwm_set != pwm_out.failsafe_pwm_sent)
         {
             uint8_t set = pwm_out.failsafe_pwm_set;
-            if (write_registers(PAGE_FAILSAFE_PWM, 0, IOMCU_MAX_CHANNELS, pwm_out.failsafe_pwm)) {
+            if (write_registers(PAGE_FAILSAFE_PWM, 0, IOMCU_MAX_CHANNELS, pwm_out.failsafe_pwm))
+            {
                 pwm_out.failsafe_pwm_sent = set;
             }
         }
@@ -278,7 +289,8 @@ void AP_IOMCU::send_servo_out()
         uint32_t now = AP_HAL::micros();
         if (now - last_servo_out_us >= 2000) {
             // don't send data at more than 500Hz
-            if (write_registers(PAGE_DIRECT_PWM, 0, n, pwm_out.pwm)) {
+            if (write_registers(PAGE_DIRECT_PWM, 0, n, pwm_out.pwm))  //发送的PWM数据
+            {
                 last_servo_out_us = now;
             }
         }
@@ -413,9 +425,14 @@ bool AP_IOMCU::read_registers(uint8_t page, uint8_t offset, uint8_t count, uint1
     return true;
 }
 
-/*
-  write count 16 bit registers
-*/
+/***********************************************************************************************************************
+*函数原型：bool AP_IOMCU::write_registers(uint8_t page, uint8_t offset, uint8_t count, const uint16_t *regs)
+*函数功能：写数据到16位寄存器
+*修改日期：2018-11-5
+*修改作者：cihang_uav
+*备注信息：write count 16 bit registers
+*************************************************************************************************************************/
+
 bool AP_IOMCU::write_registers(uint8_t page, uint8_t offset, uint8_t count, const uint16_t *regs)
 {
     IOPacket pkt;
@@ -430,26 +447,31 @@ bool AP_IOMCU::write_registers(uint8_t page, uint8_t offset, uint8_t count, cons
     pkt.offset = offset;
     pkt.crc = 0;
     memcpy(pkt.regs, regs, 2*count);
-    pkt.crc = crc_crc8((const uint8_t *)&pkt, pkt.get_size());
-    if (uart.write((uint8_t *)&pkt, pkt.get_size()) != pkt.get_size()) {
+    pkt.crc = crc_crc8((const uint8_t *)&pkt, pkt.get_size()); //进行校验
+    if (uart.write((uint8_t *)&pkt, pkt.get_size()) != pkt.get_size())
+    {
         return false;
     }
 
     // wait for the expected number of reply bytes or timeout
-    if (!uart.wait_timeout(4, 10)) {
+    if (!uart.wait_timeout(4, 10))
+    {
         //hal.console->printf("no reply for %u/%u/%u\n", page, offset, count);
         return false;
     }
     
     uint8_t *b = (uint8_t *)&pkt;
     uint8_t n = uart.available();
-    for (uint8_t i=0; i<n; i++) {
-        if (i < sizeof(pkt)) {
+    for (uint8_t i=0; i<n; i++)
+    {
+        if (i < sizeof(pkt))
+        {
             b[i] = uart.read();
         }
     }
 
-    if (pkt.code != CODE_SUCCESS) {
+    if (pkt.code != CODE_SUCCESS)
+    {
         hal.console->printf("bad code %02x write %u/%u/%u %02x/%02x n=%u\n",
                             pkt.code, page, offset, count,
                             pkt.page, pkt.offset, n);
@@ -458,7 +480,8 @@ bool AP_IOMCU::write_registers(uint8_t page, uint8_t offset, uint8_t count, cons
     uint8_t got_crc = pkt.crc;
     pkt.crc = 0;
     uint8_t expected_crc = crc_crc8((const uint8_t *)&pkt, pkt.get_size());
-    if (got_crc != expected_crc) {
+    if (got_crc != expected_crc)
+    {
         hal.console->printf("bad crc %02x should be %02x\n", got_crc, expected_crc);
         return false;
     }
@@ -478,20 +501,32 @@ bool AP_IOMCU::modify_register(uint8_t page, uint8_t offset, uint16_t clearbits,
     }
     return write_registers(page, offset, 1, &v2);
 }
-
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU::write_channel(uint8_t chan, uint16_t pwm)
+*函数功能：写PWM值
+*修改日期：2018-11-8
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void AP_IOMCU::write_channel(uint8_t chan, uint16_t pwm)
 {
-    if (chan >= IOMCU_MAX_CHANNELS) {
+    if (chan >= IOMCU_MAX_CHANNELS)
+    {
         return;
     }
-    if (chan >= pwm_out.num_channels) {
+    if (chan >= pwm_out.num_channels)
+    {
         pwm_out.num_channels = chan+1;
     }
     pwm_out.pwm[chan] = pwm;
-    if (!corked) {
+    if (!corked)
+    {
         push();
     }
 }
+
+
+
 
 void AP_IOMCU::print_debug(void)
 {
@@ -504,11 +539,19 @@ void AP_IOMCU::print_debug(void)
 #endif // IOMCU_DEBUG
 }
 
-// trigger an ioevent
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU::trigger_event(uint8_t event)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：trigger an ioevent
+*************************************************************************************************************************/
+
 void AP_IOMCU::trigger_event(uint8_t event)
 {
-    if (thread_ctx != nullptr) {
-        chEvtSignal(thread_ctx, EVENT_MASK(event));
+    if (thread_ctx != nullptr)
+    {
+        chEvtSignal(thread_ctx, EVENT_MASK(event)); //将一组事件标志直接添加到指定的线程中。
     }
 }
 
@@ -545,13 +588,28 @@ void AP_IOMCU::cork(void)
     corked = true;
 }
 
-// push output
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU::push(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：推送输出
+*************************************************************************************************************************/
+
 void AP_IOMCU::push(void)
 {
-    trigger_event(IOEVENT_SEND_PWM_OUT);
+    trigger_event(IOEVENT_SEND_PWM_OUT); //触发事件
     corked = false;
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU::push(void)
+*函数功能：函数任务
+*修改日期：2018-10-29
+*修改作者：cihang_uav
+*备注信息：推送输出
+*************************************************************************************************************************/
 // set output frequency
 void AP_IOMCU::set_freq(uint16_t chmask, uint16_t freq)
 {
@@ -598,7 +656,14 @@ bool AP_IOMCU::check_rcinput(uint32_t &last_frame_us, uint8_t &num_channels, uin
     return false;
 }
 
-// set IMU heater target
+/***********************************************************************************************************************
+*函数原型：void AP_IOMCU::set_heater_duty_cycle(uint8_t duty_cycle)
+*函数功能：设置IMU加热器目标
+*修改日期：2018-11-19
+*修改作者：cihang_uav
+*备注信息：set IMU heater target
+*************************************************************************************************************************/
+
 void AP_IOMCU::set_heater_duty_cycle(uint8_t duty_cycle)
 {
     heater_duty_cycle = duty_cycle;
@@ -659,25 +724,28 @@ void AP_IOMCU::update_safety_options(void)
 
 bool AP_IOMCU::check_crc(void)
 {
-    // flash size minus 4k bootloader
+    //至少4K空间的大小给Bootloader----flash size minus 4k bootloader
 	const uint32_t flash_size = 0x10000 - 0x1000;
     
     fw = AP_ROMFS::find_decompress(fw_name, fw_size);
-    if (!fw) {
+    if (!fw)
+    {
         hal.console->printf("failed to find %s\n", fw_name);
         return false;
     }
     uint32_t crc = crc_crc32(0, fw, fw_size);
 
     // pad CRC to max size
-	for (uint32_t i=0; i<flash_size-fw_size; i++) {
+	for (uint32_t i=0; i<flash_size-fw_size; i++)
+	{
 		uint8_t b = 0xff;
 		crc = crc_crc32(crc, &b, 1);
 	}
 
     uint32_t io_crc = 0;
     if (read_registers(PAGE_SETUP, PAGE_REG_SETUP_CRC, 2, (uint16_t *)&io_crc) &&
-        io_crc == crc) {
+        io_crc == crc)
+    {
         hal.console->printf("IOMCU: CRC ok\n");
         crc_is_ok = true;
         free(fw);

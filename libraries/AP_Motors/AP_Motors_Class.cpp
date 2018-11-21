@@ -70,23 +70,37 @@ void AP_Motors::set_radio_passthrough(float roll_input, float pitch_input, float
     _yaw_radio_passthrough = yaw_input;
 }
 
-/*
-  write to an output channel
- */
+
+/***********************************************************************************************************************
+*函数原型：void AP_Motors::rc_write(uint8_t chan, uint16_t pwm)
+*函数功能：写一个输出通道
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：write to an output channel
+*************************************************************************************************************************/
+
 void AP_Motors::rc_write(uint8_t chan, uint16_t pwm)
 {
-    SRV_Channel::Aux_servo_function_t function = SRV_Channels::get_motor_function(chan);
+    SRV_Channel::Aux_servo_function_t function = SRV_Channels::get_motor_function(chan); //获取通道
     SRV_Channels::set_output_pwm(function, pwm);
 }
 
-/*
-  write to an output channel for an angle actuator
- */
+
+/***********************************************************************************************************************
+*函数原型：void AP_Motors::rc_write(uint8_t chan, uint16_t pwm)
+*函数功能：写一个输出通道
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：write to an output channel for an angle actuator
+*************************************************************************************************************************/
+
 void AP_Motors::rc_write_angle(uint8_t chan, int16_t angle_cd)
 {
     SRV_Channel::Aux_servo_function_t function = SRV_Channels::get_motor_function(chan);
     SRV_Channels::set_output_scaled(function, angle_cd);
 }
+
+
 
 /*
   set frequency of a set of channels

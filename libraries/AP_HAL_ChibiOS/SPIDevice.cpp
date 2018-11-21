@@ -41,7 +41,8 @@ extern const AP_HAL::HAL& hal;
 #define SPI6_CLOCK  STM32_PCLK2
 
 // expected bus clock speeds
-static const uint32_t bus_clocks[6] = {
+static const uint32_t bus_clocks[6] =
+{
     SPI1_CLOCK, SPI2_CLOCK, SPI3_CLOCK, SPI4_CLOCK, SPI5_CLOCK, SPI6_CLOCK
 };
 
@@ -264,20 +265,25 @@ bool SPIDevice::adjust_periodic_callback(AP_HAL::Device::PeriodicHandle h, uint3
 bool SPIDevice::acquire_bus(bool set, bool skip_cs)
 {
     bus.semaphore.assert_owner();
-    if (set && cs_forced) {
+    if (set && cs_forced)
+    {
         return true;
     }
-    if (!set && !cs_forced) {
+    if (!set && !cs_forced)
+    {
         return false;
     }
-    if (!set && cs_forced) {
-        if(!skip_cs) {
+    if (!set && cs_forced)
+    {
+        if(!skip_cs)
+        {
             spiUnselectI(spi_devices[device_desc.bus].driver);          /* Slave Select de-assertion.       */
         }
         spiReleaseBus(spi_devices[device_desc.bus].driver);              /* Ownership release.               */
         cs_forced = false;
         bus.dma_handle->unlock();
-    } else {
+    } else
+    {
         bus.dma_handle->lock();
         spiAcquireBus(spi_devices[device_desc.bus].driver);              /* Acquire ownership of the bus.    */
         bus.spicfg.end_cb = nullptr;
@@ -285,13 +291,15 @@ bool SPIDevice::acquire_bus(bool set, bool skip_cs)
         bus.spicfg.sspad = PAL_PAD(device_desc.pal_line);
         bus.spicfg.cr1 = (uint16_t)(freq_flag | device_desc.mode);
         bus.spicfg.cr2 = 0;
-        if (bus.spi_started) {
+        if (bus.spi_started)
+        {
             spiStop(spi_devices[device_desc.bus].driver);
             bus.spi_started = false;
         }
         spiStart(spi_devices[device_desc.bus].driver, &bus.spicfg);        /* Setup transfer parameters.       */
         bus.spi_started = true;
-        if(!skip_cs) {
+        if(!skip_cs)
+        {
             spiSelectI(spi_devices[device_desc.bus].driver);                /* Slave Select assertion.          */
         }
         cs_forced = true;
@@ -302,7 +310,8 @@ bool SPIDevice::acquire_bus(bool set, bool skip_cs)
 /*
   allow for control of SPI chip select pin
  */
-bool SPIDevice::set_chip_select(bool set) {
+bool SPIDevice::set_chip_select(bool set)
+{
     return acquire_bus(set, false);
 }
 
@@ -314,12 +323,15 @@ SPIDeviceManager::get_device(const char *name)
 {
     /* Find the bus description in the table */
     uint8_t i;
-    for (i = 0; i<ARRAY_SIZE(device_table); i++) {
-        if (strcmp(device_table[i].name, name) == 0) {
+    for (i = 0; i<ARRAY_SIZE(device_table); i++)
+    {
+        if (strcmp(device_table[i].name, name) == 0)
+        {
             break;
         }
     }
-    if (i == ARRAY_SIZE(device_table)) {
+    if (i == ARRAY_SIZE(device_table))
+    {
         printf("SPI: Invalid device name: %s\n", name);
         return AP_HAL::OwnPtr<AP_HAL::SPIDevice>(nullptr);
     }
@@ -328,15 +340,19 @@ SPIDeviceManager::get_device(const char *name)
 
     // find the bus
     SPIBus *busp;
-    for (busp = buses; busp; busp = (SPIBus *)busp->next) {
-        if (busp->bus == desc.bus) {
+    for (busp = buses; busp; busp = (SPIBus *)busp->next)
+    {
+        if (busp->bus == desc.bus)
+        {
             break;
         }
     }
-    if (busp == nullptr) {
+    if (busp == nullptr)
+    {
         // create a new one
         busp = new SPIBus(desc.bus);
-        if (busp == nullptr) {
+        if (busp == nullptr)
+        {
             return nullptr;
         }
         busp->next = buses;

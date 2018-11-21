@@ -808,10 +808,12 @@ void UARTDriver::_timer_tick(void)
 
                 receive_timestamp_update();
                 
-                if (_wait.thread_ctx && _readbuf.available() >= _wait.n) {
-                    chEvtSignal(_wait.thread_ctx, EVT_DATA);                    
+                if (_wait.thread_ctx && _readbuf.available() >= _wait.n)
+                {
+                    chEvtSignal(_wait.thread_ctx, EVT_DATA);      //等待事件组数据
                 }
-                if (_rts_is_active) {
+                if (_rts_is_active)
+                {
                     update_rts_line();
                 }
             }

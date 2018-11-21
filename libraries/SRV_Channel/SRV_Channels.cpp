@@ -187,24 +187,47 @@ void SRV_Channels::setup_failsafe_trim_all_non_motors(void)
     }
 }
 
-/*
-  run calc_pwm for all channels
- */
+/***********************************************************************************************************************
+*函数原型：void SRV_Channels::calc_pwm(void)
+*函数功能：计算pwm
+*修改日期：2018-11-8
+*修改作者：cihang_uav
+*备注信息：run calc_pwm for all channels
+*************************************************************************************************************************/
+
 void SRV_Channels::calc_pwm(void)
 {
-    for (uint8_t i=0; i<NUM_SERVO_CHANNELS; i++) {
+    for (uint8_t i=0; i<NUM_SERVO_CHANNELS; i++)
+    {
         channels[i].calc_pwm(functions[channels[i].function].output_scaled);
     }
 }
 
-// set output value for a specific function channel as a pwm value
+
+/***********************************************************************************************************************
+*函数原型：void SRV_Channels::set_output_pwm_chan(uint8_t chan, uint16_t value)
+*函数功能：将特定函数通道的输出值设置为PWM值
+*修改日期：2018-11-8
+*修改作者：cihang_uav
+*备注信息：set output value for a specific function channel as a pwm value
+*************************************************************************************************************************/
+
 void SRV_Channels::set_output_pwm_chan(uint8_t chan, uint16_t value)
 {
-    if (chan < NUM_SERVO_CHANNELS) {
-        channels[chan].set_output_pwm(value);
+    if (chan < NUM_SERVO_CHANNELS)
+    {
+        channels[chan].set_output_pwm(value); //针对不同的通道设置不同的pwm值，这个值要通过uart8发送出去
     }
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void SRV_Channels::set_output_pwm_chan(uint8_t chan, uint16_t value)
+*函数功能：将特定函数通道的输出值设置为PWM值
+*修改日期：2018-11-8
+*修改作者：cihang_uav
+*备注信息：set output value for a specific function channel as a pwm value
+*************************************************************************************************************************/
 /*
   wrapper around hal.rcout->cork()
  */

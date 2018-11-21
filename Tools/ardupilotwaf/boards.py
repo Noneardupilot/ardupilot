@@ -10,7 +10,7 @@ from waflib.Configure import conf
 _board_classes = {}
 _board = None
 
-print('ardupilot开始编译board')  #字节添加代码
+#print('ardupilot开始编译board')  #字节添加代码
 #类定义Meta板
 class BoardMeta(type):
     def __init__(cls, name, bases, dct):     #方法定义

@@ -68,6 +68,7 @@ public:
         Notify_LED_UAVCAN                   = (1 << 5),  // UAVCAN RGB LED
         Notify_LED_NCP5623_I2C_External     = (1 << 6),  // External NCP5623
         Notify_LED_NCP5623_I2C_Internal     = (1 << 7),  // Internal NCP5623
+		Notify_LED_CIHANG_I2C_Internal     = (1 << 8),  // Internal CIHANG_UAV_LED
         Notify_LED_MAX
     };
 

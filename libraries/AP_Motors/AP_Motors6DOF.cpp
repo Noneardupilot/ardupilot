@@ -224,6 +224,13 @@ int16_t AP_Motors6DOF::calc_thrust_to_pwm(float thrust_in) const
     return constrain_int16(1500 + thrust_in * 400, _throttle_radio_min, _throttle_radio_max);
 }
 
+/***********************************************************************************************************************
+*函数原型：void AP_Motors6DOF::output_to_motors()
+*函数功能：输出pwm到电机
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：output - sends commands to the motors
+*************************************************************************************************************************/
 void AP_Motors6DOF::output_to_motors()
 {
     int8_t i;
@@ -260,8 +267,10 @@ void AP_Motors6DOF::output_to_motors()
     }
 
     // send output to each motor
-    for (i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++) {
-        if (motor_enabled[i]) {
+    for (i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++)
+    {
+        if (motor_enabled[i])
+        {
             rc_write(i, motor_out[i]);
         }
     }

@@ -408,15 +408,22 @@ uint16_t AP_InertialSensor_Backend::get_sample_rate_hz(void) const
     return (uint16_t)_imu._sample_rate;
 }
 
-/*
-  publish a temperature value for an instance
- */
+
+/***********************************************************************************************************************
+*函数原型：void AP_InertialSensor_Backend::_publish_temperature(uint8_t instance, float temperature)
+*函数功能：发布实例的温度值
+*修改日期：2018-11-19
+*修改作者：cihang_uav
+*备注信息：publish a temperature value for an instance
+*************************************************************************************************************************/
+
 void AP_InertialSensor_Backend::_publish_temperature(uint8_t instance, float temperature)
 {
     _imu._temperature[instance] = temperature;
 
     /* give the temperature to the control loop in order to keep it constant*/
-    if (instance == 0) {
+    if (instance == 0)//把温度送到控制回路，使之保持恒定。
+    {
         hal.util->set_imu_temp(temperature);
     }
 }

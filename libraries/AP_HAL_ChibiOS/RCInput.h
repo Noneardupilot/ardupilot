@@ -38,7 +38,8 @@
 #define RC_INPUT_MAX_CHANNELS 18
 #endif
 
-class ChibiOS::RCInput : public AP_HAL::RCInput {
+class ChibiOS::RCInput : public AP_HAL::RCInput
+{
 public:
     void init() override;
     bool new_input() override;
@@ -46,7 +47,8 @@ public:
     uint16_t read(uint8_t ch) override;
     uint8_t read(uint16_t* periods, uint8_t len) override;
 
-    int16_t get_rssi(void) override {
+    int16_t get_rssi(void) override
+    {
         return _rssi;
     }
         

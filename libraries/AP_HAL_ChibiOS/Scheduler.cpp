@@ -60,6 +60,7 @@ Scheduler::Scheduler()
 *************************************************************************************************************************************/
 void Scheduler::init()
 {
+
     chBSemObjectInit(&_timer_semaphore, false); //定时器二进制信号量，初始状态是0，没有被取用，所以后面的信号量就可以被使用
     chBSemObjectInit(&_io_semaphore, false);    //IO二进制信号量，初始状态是0，没有被取用，，所以后面的信号量就可以被使用
     //设置定时器线程-这将调用任务在1kHz---- setup the timer thread - this will call tasks at 1kHz
@@ -75,7 +76,8 @@ void Scheduler::init()
                      APM_RCIN_PRIORITY,        /* Initial priority. 177   */
                      _rcin_thread,             /* Thread function.     */
                      this);                     /* Thread parameter.    */
-#ifndef HAL_USE_EMPTY_IO
+#ifndef HAL_USE_EMPTY_IO //协处理器不使用
+
     //IO线程以较低优先级运行--------- the IO thread runs at lower priority
     _io_thread_ctx = chThdCreateStatic(_io_thread_wa,
                      sizeof(_io_thread_wa),
@@ -84,7 +86,8 @@ void Scheduler::init()
                      this);                  /* Thread parameter.      */
 #endif
 
-#ifndef HAL_USE_EMPTY_STORAGE
+#ifndef HAL_USE_EMPTY_STORAGE//协处理器不使用
+
     //存储线程在IO优先级之上运行。-------- the storage thread runs at just above IO priority
     _storage_thread_ctx = chThdCreateStatic(_storage_thread_wa,
                      sizeof(_storage_thread_wa),
@@ -393,7 +396,7 @@ void Scheduler::_run_io(void)
 
     int num_procs = 0;            //进程计数
     chBSemWait(&_io_semaphore);   //等待信号量的到来
-    hal.uartG->printf("GG2\r\n");
+    //hal.uartG->printf("GG2\r\n");
     num_procs = _num_io_procs;
     chBSemSignal(&_io_semaphore); //释放二进制信号量
     //现在调用基于IO的驱动程序----- -now call the IO based drivers
@@ -416,7 +419,7 @@ void Scheduler::_run_io(void)
 *************************************************************************************************************************************/
 void Scheduler::_io_thread(void* arg)
 {
-	hal.uartG->printf("GGG\r\n");
+	//hal.uartG->printf("GGG\r\n");
     Scheduler *sched = (Scheduler *)arg;
     chRegSetThreadName("apm_io");   //设置线程名称
     while (!sched->_hal_initialized) //没有初始化就等待1ms
@@ -531,7 +534,8 @@ bool Scheduler::thread_create(AP_HAL::MemberProc proc, const char *name, uint32_
     static const struct {
         priority_base base;
         uint8_t p;
-    } priority_map[] = {
+    } priority_map[] =
+    {
         { PRIORITY_BOOST, APM_MAIN_PRIORITY_BOOST},
         { PRIORITY_MAIN, APM_MAIN_PRIORITY},
         { PRIORITY_SPI, APM_SPI_PRIORITY},

@@ -69,12 +69,20 @@ void AP_MotorsMatrix::set_frame_class_and_type(motor_frame_class frame_class, mo
     set_update_rate(_speed_hz);
 }
 
+/***********************************************************************************************************************
+*函数原型：void AP_MotorsMatrix::output_to_motors()
+*函数功能：核心主循环
+*修改日期：2018-9-12
+*修改作者：cihang_uav
+*备注信息：Main loop - 400hz
+*************************************************************************************************************************/
 void AP_MotorsMatrix::output_to_motors()
 {
     int8_t i;
-    int16_t motor_out[AP_MOTORS_MAX_NUM_MOTORS];    // final pwm values sent to the motor
+    int16_t motor_out[AP_MOTORS_MAX_NUM_MOTORS];    //发送到电机的最终PWM值----- final pwm values sent to the motor
 
-    switch (_spool_mode) {
+    switch (_spool_mode)
+    {
         case SHUT_DOWN: {
             // sends minimum values out to the motors
             // set motor output based on thrust requests
@@ -110,9 +118,11 @@ void AP_MotorsMatrix::output_to_motors()
     }
 
     // send output to each motor
-    for (i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++) {
-        if (motor_enabled[i]) {
-            rc_write(i, motor_out[i]);
+    for (i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++)
+    {
+        if (motor_enabled[i])
+        {
+            rc_write(i, motor_out[i]); ////最终写入的值
         }
     }
 }

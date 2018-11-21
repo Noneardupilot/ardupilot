@@ -557,16 +557,23 @@ uint8_t AP_InertialSensor::register_accel(uint16_t raw_sample_rate_hz,
     return _accel_count++;
 }
 
-/*
- * Start all backends for gyro and accel measurements. It automatically calls
- * detect_backends() if it has not been called already.
- */
+
+/***********************************************************************************************************************
+*函数原型：void AP_InertialSensor::_start_backends()
+*函数功能：识别传感器
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息： Start all backends for gyro and accel measurements. It automatically calls
+*         detect_backends() if it has not been called already.
+*************************************************************************************************************************/
+
 void AP_InertialSensor::_start_backends()
 
 {
     detect_backends();
 
-    for (uint8_t i = 0; i < _backend_count; i++) {
+    for (uint8_t i = 0; i < _backend_count; i++)
+    {
         _backends[i]->start();
     }
 
@@ -575,10 +582,12 @@ void AP_InertialSensor::_start_backends()
     }
 
     // clear IDs for unused sensor instances
-    for (uint8_t i=get_accel_count(); i<INS_MAX_INSTANCES; i++) {
+    for (uint8_t i=get_accel_count(); i<INS_MAX_INSTANCES; i++)
+    {
         _accel_id[i].set(0);
     }
-    for (uint8_t i=get_gyro_count(); i<INS_MAX_INSTANCES; i++) {
+    for (uint8_t i=get_gyro_count(); i<INS_MAX_INSTANCES; i++)
+    {
         _gyro_id[i].set(0);
     }
 }
@@ -606,8 +615,14 @@ AP_InertialSensor_Backend *AP_InertialSensor::_find_backend(int16_t backend_id, 
     return nullptr;
 }
 
-void
-AP_InertialSensor::init(uint16_t sample_rate)
+/***********************************************************************************************************************
+*函数原型：void AP_InertialSensor::init(uint16_t sample_rate)
+*函数功能：惯性传感器初始化
+*修改日期：2018-10-26
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
+void AP_InertialSensor::init(uint16_t sample_rate)
 {
     // remember the sample rate
     _sample_rate = sample_rate;
@@ -618,14 +633,17 @@ AP_InertialSensor::init(uint16_t sample_rate)
     // cause divergence of state estimators
     _loop_delta_t_max = 10 * _loop_delta_t;
 
-    if (_gyro_count == 0 && _accel_count == 0) {
-        _start_backends();
+    if (_gyro_count == 0 && _accel_count == 0)
+    {
+        _start_backends();//识别传感器
     }
 
     // initialise accel scale if need be. This is needed as we can't
     // give non-zero default values for vectors in AP_Param
-    for (uint8_t i=0; i<get_accel_count(); i++) {
-        if (_accel_scale[i].get().is_zero()) {
+    for (uint8_t i=0; i<get_accel_count(); i++)
+    {
+        if (_accel_scale[i].get().is_zero())
+        {
             _accel_scale[i].set(Vector3f(1,1,1));
         }
     }

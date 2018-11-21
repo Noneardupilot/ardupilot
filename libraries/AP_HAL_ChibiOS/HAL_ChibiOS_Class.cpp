@@ -155,6 +155,7 @@ static AP_HAL::HAL::Callbacks* g_callbacks;
 
 static void main_loop()
 {
+
     daemon_task = chThdGetSelfX(); //返回当前线程
 
     /*
@@ -162,7 +163,8 @@ static void main_loop()
      */
     chThdSetPriority(APM_MAIN_PRIORITY); //180
 
-#ifdef HAL_I2C_CLEAR_BUS
+#ifdef HAL_I2C_CLEAR_BUS //协处理器不使用
+
     //- Clear all I2C Buses. This can be needed on some boards which
     // can get a stuck I2C peripheral on boot
     //清除所有的I2C总线。这可能需要在一些板上，可以得到一个卡住的I2C外围设备启动。
@@ -170,6 +172,7 @@ static void main_loop()
 #endif
 
 #if STM32_DMA_ADVANCED
+
     ChibiOS::Shared_DMA::init(); //不使能DMA
 #endif
     peripheral_power_enable();   //启用外围电源
@@ -177,6 +180,7 @@ static void main_loop()
     hal.uartA->begin(115200);   //初始化USB的波特率
 
 #ifdef HAL_SPI_CHECK_CLOCK_FREQ
+
     //SPI时钟频率的可选测试---- optional test of SPI clock frequencies
     ChibiOS::SPIDevice::test_clock_freq();
 #endif 
@@ -211,11 +215,12 @@ static void main_loop()
      */
     chThdSetPriority(APM_MAIN_PRIORITY);
 
-    hal.uartG->printf("UARTG\r\n"); //自己添加打印函数
+   // hal.uartG->printf("UARTG\r\n"); //自己添加打印函数
 
 
     while (true)
     {
+
         g_callbacks->loop();  //调用APP的loop线程
 
         /*
@@ -231,7 +236,7 @@ static void main_loop()
        // hal.uartG->printf("MMM\r\n"); //自己添加打印函数
         if (!schedulerInstance.check_called_boost())
         {
-        	hal.uartG->printf("NNN\r\n"); //自己添加打印函数
+        	//hal.uartG->printf("NNN\r\n"); //自己添加打印函数
             hal.scheduler->delay_microseconds(250);
         }
     }
@@ -260,12 +265,14 @@ void HAL_ChibiOS::run(int argc, char * const argv[], Callbacks* callbacks) const
      *   RTOS is active.
      */
 
-#ifdef HAL_USB_PRODUCT_ID
+#ifdef HAL_USB_PRODUCT_ID  //协处理器不使用
   setup_usb_strings(); //动态分配USB描述符字符串，建议先不要去研究这个
+
 #endif
     
-#ifdef HAL_STDOUT_SERIAL
+#ifdef HAL_STDOUT_SERIAL   //协处理器不使用
     //标准输出初始化--------STDOUT Initialistion
+
     SerialConfig stdoutcfg =
     {
       HAL_STDOUT_BAUDRATE,
@@ -277,6 +284,7 @@ void HAL_ChibiOS::run(int argc, char * const argv[], Callbacks* callbacks) const
 #endif
 
     assert(callbacks);       //用来让程序测试条件，如果条件正确继续执行，如果条件错误，报错。
+
     g_callbacks = callbacks; //函数定义传递
 
     //接管执行main------------Takeover main

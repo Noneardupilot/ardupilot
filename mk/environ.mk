@@ -3,20 +3,24 @@
 # Save the system type for later use.
 #
 SYSTYPE			:=	$(shell uname)
+$(warning "****lixiaowei*******")
 
 GIT_VERSION ?= $(shell git rev-parse HEAD | cut -c1-8)
+$(warning $(GIT_VERSION))
 EXTRAFLAGS += -DGIT_VERSION="\"$(GIT_VERSION)\""
 
 # Add missing parts from libc and libstdc++ for all boards
+#为所有的板增加缺失部分
 EXTRAFLAGS += -I$(SKETCHBOOK)/libraries/AP_Common/missing
-
+$(warning $(EXTRAFLAGS))
 # force LANG to C so awk works sanely on MacOS
 export LANG=C
 
-#
+#基于初始生成文件路径查找草图源
 # Locate the sketch sources based on the initial Makefile's path
 #
 SRCROOT			:=	$(realpath $(dir $(firstword $(MAKEFILE_LIST))))
+$(warning $(SRCROOT)) #/home/coco/Desktop/test4/ardupilot-lxw/ArduCopter
 ifneq ($(findstring CYGWIN, $(SYSTYPE)),)
   # Workaround a $(realpath ) bug on cygwin
   ifeq ($(SRCROOT),)
@@ -32,11 +36,13 @@ endif
 # there, assume that we are in a library's examples directory and try backing up
 # further.
 #
+$(warning $(SKETCHBOOK))
 ifeq ($(SKETCHBOOK),)
   SKETCHBOOK		:=	$(shell cd $(SRCROOT)/.. && pwd)
   ifeq ($(wildcard $(SKETCHBOOK)/libraries),)
     $(error ERROR: cannot determine sketchbook location - please specify on the commandline with SKETCHBOOK=<path>)
   endif
+ 
 else
   ifeq ($(wildcard $(SKETCHBOOK)/libraries),)
     $(warning WARNING: sketchbook directory $(SKETCHBOOK) contains no libraries)
@@ -121,19 +127,24 @@ MAVLINK_SUBDIR=v2.0
 MAVLINK_WIRE_PROTOCOL=2.0
 endif
 
+$(warning $(APPDIR))
 ifneq ($(APPDIR),)
 # this is a recusive PX4 build
 HAL_BOARD = HAL_BOARD_PX4
 endif
 
 # handle target based overrides for board type
+#下面所有代码均是根据开发板类型选择编译目标
+$(warning $(MAKECMDGOALS))
 ifneq ($(findstring px4, $(MAKECMDGOALS)),)
 HAL_BOARD = HAL_BOARD_PX4
+
 endif
 
 ifneq ($(findstring sitl, $(MAKECMDGOALS)),)
 HAL_BOARD = HAL_BOARD_SITL
 HAL_BOARD_SUBTYPE = HAL_BOARD_SUBTYPE_NONE
+
 endif
 
 ifneq ($(findstring vrbrain, $(MAKECMDGOALS)),)

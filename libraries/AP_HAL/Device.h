@@ -163,7 +163,7 @@ public:
      * Get the semaphore for the bus this device is in.  This is intended for
      * drivers to use during initialization phase only.
      */
-    virtual AP_HAL::Semaphore *get_semaphore() = 0;
+    virtual AP_HAL::Semaphore *get_semaphore() = 0; //获取此设备所在总线的信号量。这只是为了在初始化阶段只使用驱动程序。
 
     /*
      * Register a periodic callback for this bus. All callbacks on the

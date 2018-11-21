@@ -3,9 +3,11 @@
 #include "string.h"
 #include "utility/functor.h"
 
-namespace AP_HAL {
+//定义所有的板层虚拟接口
+namespace AP_HAL
+{
 
-    /* Toplevel pure virtual class Hal.*/
+    /*纯虚拟类HAL------ Toplevel pure virtual class Hal.*/
     class HAL;
 
     /* Toplevel class names for drivers: */
@@ -35,7 +37,7 @@ namespace AP_HAL {
 
     class Util;
 
-    /* Utility Classes */
+    /*实用类------ Utility Classes */
     class Print;
     class Stream;
     class BetterStream;
@@ -52,7 +54,8 @@ namespace AP_HAL {
      * Global names for all of the existing SPI devices on all platforms.
      */
 
-    enum SPIDeviceType {
+    enum SPIDeviceType
+	{
         // Devices using AP_HAL::SPIDevice abstraction
         SPIDevice_Type              = -1,
     };
@@ -60,3 +63,5 @@ namespace AP_HAL {
     // Must be implemented by the concrete HALs.
     const HAL& get_HAL();
 }
+
+

@@ -137,7 +137,7 @@ void AP_Scheduler::run(uint32_t time_available)
     for (uint8_t i=0; i<_num_tasks; i++)
     {
 
-    	hal.uartG->printf("i=%d\r\n",i); //
+    	//hal.uartG->printf("i=%d\r\n",i); //
 
         uint16_t dt = _tick_counter - _last_run[i]; //_last_run[i]:执行一个loop，记录的任务表中每个任务被被执行的次数,因此dt表示上次运行的那个任务到现在这里的圈数
      //   hal.uartG->printf("_tick_counter=%d\r\n",_tick_counter); //time_available=2212..

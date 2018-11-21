@@ -92,10 +92,19 @@ Util::safety_state Util::safety_switch_state(void)
 #endif
 }
 
+
+/***********************************************************************************************************************
+*函数原型：void Util::set_imu_temp(float current)
+*函数功能：设定IMU温度
+*修改日期：2018-11-19
+*修改作者：cihang_uav
+*备注信息：publish a temperature value for an instance
+*************************************************************************************************************************/
 void Util::set_imu_temp(float current)
 {
 #if HAL_WITH_IO_MCU && HAL_HAVE_IMU_HEATER
-    if (!heater.target || *heater.target == -1 || !AP_BoardConfig::io_enabled()) {
+    if (!heater.target || *heater.target == -1 || !AP_BoardConfig::io_enabled())
+    {
         return;
     }
 
@@ -105,7 +114,8 @@ void Util::set_imu_temp(float current)
     
     // update once a second
     uint32_t now = AP_HAL::millis();
-    if (now - heater.last_update_ms < 1000) {
+    if (now - heater.last_update_ms < 1000)
+    {
         return;
     }
     heater.last_update_ms = now;

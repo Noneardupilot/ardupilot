@@ -40,7 +40,8 @@ static bool sdcard_running;
 void sdcard_init()
 {
 #ifdef USE_POSIX
-    if (sdcard_init_done) {
+    if (sdcard_init_done)
+    {
         return;
     }
     sdcard_init_done = true;

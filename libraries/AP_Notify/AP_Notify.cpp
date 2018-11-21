@@ -42,10 +42,10 @@ AP_Notify *AP_Notify::_instance;
 
 #define TOSHIBA_LED_I2C_BUS_INTERNAL    0
 #define TOSHIBA_LED_I2C_BUS_EXTERNAL    1
-
+#define TOSHIBA_LED_CIHANG_I2C_BUS_EXTERNAL    3  //采用IIC4进行控制LED
 // all I2C_LEDS
 #define I2C_LEDS (Notify_LED_ToshibaLED_I2C_Internal | Notify_LED_ToshibaLED_I2C_External | \
-                  Notify_LED_NCP5623_I2C_Internal | Notify_LED_NCP5623_I2C_External)
+                  Notify_LED_NCP5623_I2C_Internal | Notify_LED_NCP5623_I2C_External|Notify_LED_CIHANG_I2C_Internal)
 
 #ifndef BUILD_DEFAULT_LED_TYPE
 // PX4 boards
@@ -241,7 +241,9 @@ void AP_Notify::add_backends(void)
             case Notify_LED_ToshibaLED_I2C_External:
                 ADD_BACKEND(new ToshibaLED_I2C(TOSHIBA_LED_I2C_BUS_EXTERNAL));
                 break;
-
+            case Notify_LED_CIHANG_I2C_Internal:
+                ADD_BACKEND(new ToshibaLED_I2C(TOSHIBA_LED_CIHANG_I2C_BUS_EXTERNAL));
+                break;
 
 #if !HAL_MINIMIZE_FEATURES
             case Notify_LED_NCP5623_I2C_External:
@@ -333,10 +335,10 @@ void AP_Notify::init(void)
     // clear all flags and events
     memset(&AP_Notify::flags, 0, sizeof(AP_Notify::flags));
     memset(&AP_Notify::events, 0, sizeof(AP_Notify::events));
-    hal.uartG->printf("AAA\r\n");
+   // hal.uartG->printf("AAA\r\n");
     // add all the backends
     add_backends();
-    hal.uartG->printf("BBB\r\n");
+   // hal.uartG->printf("BBB\r\n");
 }
 
 // main update function, called at 50Hz

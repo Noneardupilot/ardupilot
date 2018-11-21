@@ -9,7 +9,7 @@ from waflib import Build, Logs, Options, Utils     #从waflib导入Build,Logs,Op
 
 from waflib.Configure import conf                  #waflib.Configure导入函数  
 
-print('ardupilot开始编译ardupilotwaf')  #字节添加代码
+#print('ardupilot开始编译ardupilotwaf')  #字节添加代码
 
 from waflib.TaskGen import before_method, feature  #从waflib.TaskGen导入before_method，feature函数
 import os.path, os
@@ -463,10 +463,10 @@ cleaning the build.
 ''')
 
 def build(bld):
-    print("^^^^^^^^^^^^^^^^^^")
+    #print("^^^^^^^^^^^^^^^^^^")
     bld.add_pre_fun(_process_build_command)
     bld.add_pre_fun(_select_programs_from_group)
-    print("^^^^^^^^^^^^^^^^^^")
+    #print("^^^^^^^^^^^^^^^^^^")
 
 
 
